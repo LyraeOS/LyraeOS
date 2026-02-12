@@ -170,7 +170,7 @@ void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c) {
   gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p1.x, p2.y), c);
 }
 void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
-  gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p2.x, p2.y), c);
-  gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p3.x, p3.y), c);
-  gfx_draw_line(vec2_new(p3.x, p3.y), vec2_new(p1.x, p1.y), c);
+  gfx_draw_line(p1, p2, c);
+  gfx_draw_line(p2, p3, c);
+  gfx_draw_line(p3, p1, c);
 }
