@@ -1,6 +1,6 @@
 .SUFFIXES:
 
-override OUTPUT := zephyrOS
+override OUTPUT := LyraeOS
 
 CFLAGS := -g -O2 -pipe
 
@@ -90,7 +90,7 @@ bin/image.hdd: bin/$(OUTPUT)
 	./limine/limine bios-install bin/image.hdd
 	mformat -i bin/image.hdd@@1M
 	mmd -i bin/image.hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
-	mcopy -i bin/image.hdd@@1M bin/zephyrOS ::/boot
+	mcopy -i bin/image.hdd@@1M bin/$(OUTPUT) ::/boot
 	mcopy -i bin/image.hdd@@1M limine.conf limine/limine-bios.sys ::/boot/limine
 	mcopy -i bin/image.hdd@@1M limine/BOOTX64.EFI ::/EFI/BOOT
 	mcopy -i bin/image.hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT

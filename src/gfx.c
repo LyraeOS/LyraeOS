@@ -16,6 +16,9 @@ uint32_t glyphs[95] = {
 0x36426c00,0x4e872529,0x1e223c00,0x1843188c,0x08421084,0x0c463086,0x0006d800 };
 #define FONT_WIDTH 5
 #define FONT_HEIGHT 6
+#define SCALE_FACTOR 2
+#define SCALED_WIDTH FONT_WIDTH*SCALE_FACTOR
+#define SCALED_HEIGHT FONT_HEIGHT*SCALE_FACTOR
 
 struct GfxCtx gfx_ctx = {0};
 
@@ -47,7 +50,7 @@ void gfx_fill_slow(uint32_t c) {
 void gfx_set_pixel(size_t x, size_t y, uint32_t c) {
   gfx_ctx.fb_ptr[x+y*gfx_ctx.bytePitch] = c;
 }
-#define SCALE_FACTOR 2
+
 void font_scale(uint8_t *buf, char c) {
   uint32_t bmp = glyphs[c-32];
   for (int y = 0; y < FONT_HEIGHT; y++) {
@@ -58,26 +61,26 @@ void font_scale(uint8_t *buf, char c) {
       int scaled_y = y*SCALE_FACTOR;
       for (int sx = 0; sx < SCALE_FACTOR; sx++)
         for (int sy = 0; sy < SCALE_FACTOR; sy++)
-          buf[(scaled_y + sy) * FONT_WIDTH * SCALE_FACTOR + (scaled_x + sx)] = v;
+          buf[(scaled_y + sy) * SCALED_WIDTH + (scaled_x + sx)] = v;
     }
   }
 }
 
 void gfx_draw_character(char c, int start_x, int start_y) {
-  uint8_t buf[SCALE_FACTOR*SCALE_FACTOR*FONT_WIDTH*FONT_HEIGHT];
+  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
   font_scale(buf, c);
-  for (int x = start_x; x < start_x + FONT_WIDTH*SCALE_FACTOR; x++) {
-    for (int y = start_y; y < start_y + FONT_HEIGHT*SCALE_FACTOR; y++) {
+  for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
+    for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
       int x_iter = (x - start_x);
       int y_iter = (y - start_y);
-      gfx_set_pixel(x, y, buf[x_iter + y_iter*FONT_WIDTH*SCALE_FACTOR] ? gfx_ctx.fg_color : gfx_ctx.bg_color);
+      gfx_set_pixel(x, y, buf[x_iter + y_iter*SCALED_WIDTH] ? gfx_ctx.fg_color : gfx_ctx.bg_color);
     }
   }
 }
 void gfx_draw_string(char* s, int x, int y) {
   int i = 0;
   while (*s != '\0') {
-    gfx_draw_character(*s, x+(i*FONT_WIDTH*SCALE_FACTOR) + (2*i), y);
+    gfx_draw_character(*s, x+(i*SCALED_WIDTH) + (2*i), y);
     s++;
     i++;
   }
