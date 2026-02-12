@@ -6,4 +6,5 @@
 
 void hlt_loop(void);
 size_t kstrlen(const char* str);
+int abs(int value);
 #endif

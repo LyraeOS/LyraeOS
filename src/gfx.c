@@ -14,11 +14,7 @@ uint32_t glyphs[95] = {
 0x12949c21,0x0c210040,0x8c421004,0x12519521,0x0c210842,0x235aac00,0x12949c00,0x0c949800,
 0x4213a526,0x7087252e,0x02149800,0x0e837000,0x0c213c42,0x0e94a400,0x0464a400,0x155ac400,
 0x36426c00,0x4e872529,0x1e223c00,0x1843188c,0x08421084,0x0c463086,0x0006d800 };
-#define FONT_WIDTH 5
-#define FONT_HEIGHT 6
-#define SCALE_FACTOR 2
-#define SCALED_WIDTH FONT_WIDTH*SCALE_FACTOR
-#define SCALED_HEIGHT FONT_HEIGHT*SCALE_FACTOR
+
 
 struct GfxCtx gfx_ctx = {0};
 
@@ -40,6 +36,13 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_ctx.char_y = 0;
     gfx_fill_slow(gfx_ctx.bg_color);
     return true;
+}
+
+vec2 vec2_new(int x, int y) {
+  vec2 new;
+  new.x = x;
+  new.y = y;
+  return new;
 }
 
 void gfx_fill_slow(uint32_t c) {
@@ -84,4 +87,90 @@ void gfx_draw_string(char* s, int x, int y) {
     s++;
     i++;
   }
+}
+void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c) {
+  for (int x = p1.x; x < p2.x; x++) {
+    for (int y = p1.y; y < p2.y; y++) {
+      gfx_ctx.fb_ptr[x + y*gfx_ctx.bytePitch] = c;
+    }
+  }
+}
+
+// uses the midpoint circle drawing algorithm
+void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c) {
+  int x = radius, y = 0;
+  int p = 1 - radius;
+
+  gfx_set_pixel(x + center.x, y + center.y, c);
+
+  if (radius > 0) {
+      gfx_set_pixel(x + center.x, -y + center.y, c);
+      gfx_set_pixel(y + center.x, x + center.y, c);
+      gfx_set_pixel(-y + center.x, x + center.y, c);
+  }
+  
+  while (x > y) {
+    y++;
+    // Mid-point is inside or on the perimeter
+    if (p <= 0) {
+      p = p + 2*y + 1;
+    } else {
+      // mid-point is outside the perimeter
+      x--;
+      p = p + 2*y - 2*x + 1;
+    }
+
+    if (x < y)
+      break;
+      
+    gfx_set_pixel(x + center.x, y + center.y, c);
+    gfx_set_pixel(-x + center.x, y + center.y, c);
+    gfx_set_pixel(x + center.x, -y + center.y, c);
+    gfx_set_pixel(-x + center.x, -y + center.y, c);
+
+    if (x != y) {
+      gfx_set_pixel(y + center.x, x + center.y, c);
+      gfx_set_pixel(-y + center.x, x + center.y, c);
+      gfx_set_pixel(y + center.x, -x + center.y, c);
+      gfx_set_pixel(-y + center.x, -x + center.y, c);
+    }
+  }
+}
+// Bresenham approach
+void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c) {
+  int dx = abs(p2.x - p1.x);
+  int dy = abs(p2.y - p1.y);
+  int sx = p1.x < p2.x ? 1 : -1;
+  int sy = p1.y < p2.y ? 1 : -1;
+  int err = dx - dy;
+  int x1 = p1.x, x2 = p2.x, y1 = p1.y, y2=p2.y; 
+  while (1) {
+
+    gfx_set_pixel(x1, y1, c);
+
+    if (x1 == x2 && y1 == y2) break;
+
+    int e2 = 2 * err;
+
+    if (e2 > -dy) {
+      err -= dy;
+      x1 += sx;
+    }
+
+    if (e2 < dx) {
+      err += dx;
+      y1 += sy;
+    }
+  }
+}
+void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c) {
+  gfx_draw_line(vec2_new(p2.x, p1.y), vec2_new(p2.x, p2.y), c);
+  gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p2.x, p1.y), c);
+  gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p1.x, p2.y), c);
+  gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p1.x, p2.y), c);
+}
+void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
+  gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p2.x, p2.y), c);
+  gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p3.x, p3.y), c);
+  gfx_draw_line(vec2_new(p3.x, p3.y), vec2_new(p1.x, p1.y), c);
 }

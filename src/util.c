@@ -12,3 +12,9 @@ void hlt_loop(void) {
     asm("hlt");
   }
 }
+int abs(int value) {
+  if (value < 0) {
+    return -value;
+  }
+  return value;
+}
