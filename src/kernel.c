@@ -1,6 +1,7 @@
 #include "gfx.h"
 #include "mem.h"
 #include "util.h"
+#include "tty.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -21,20 +22,13 @@ __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
 void kmain(void) {
-  if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
+    if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
+        hlt_loop();
+    }
+    if (!init_gfx(framebuffer_request)) {
+        hlt_loop();
+    }
+    kprintf("Hello, world! {s}\n", "test"); 
+    kprintf("test of newlines", "test2"); 
     hlt_loop();
-  }
-  if (!init_gfx(framebuffer_request)) {
-    hlt_loop();
-  }
-
-  gfx_draw_string("SHAPES !!!!!!", 50, 50);
-  gfx_draw_circle(vec2_new(300, 300), 100, 0xFF0000);
-  gfx_draw_circle(vec2_new(300, 400), 100, 0x00FF00);
-  gfx_draw_circle(vec2_new(300, 501), 100, 0x0000FF);
-  gfx_draw_rectangle(vec2_new(500, 100), vec2_new(700, 200), 0xFFFF00);
-  gfx_draw_line(vec2_new(600, 600), vec2_new(500, 500), 0x00FFFF);
-  gfx_draw_rectangle_filled(vec2_new(500, 300), vec2_new(700, 400), 0xFF00FF);
-  gfx_draw_triangle(vec2_new(800, 400), vec2_new(1000, 400), vec2_new(900, 200), 0xFFFFFF);
-  hlt_loop();
 }

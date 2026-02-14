@@ -32,9 +32,8 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_ctx.framebuffer = fb;
     gfx_ctx.bg_color = 0x000000;
     gfx_ctx.fg_color = 0xFFFFFF;
-    gfx_ctx.char_x = 0;
-    gfx_ctx.char_y = 0;
     gfx_fill_slow(gfx_ctx.bg_color);
+    init_tty(gfx_ctx);
     return true;
 }
 
@@ -80,14 +79,7 @@ void gfx_draw_character(char c, int start_x, int start_y) {
     }
   }
 }
-void gfx_draw_string(char* s, int x, int y) {
-  int i = 0;
-  while (*s != '\0') {
-    gfx_draw_character(*s, x+(i*SCALED_WIDTH) + (2*i), y);
-    s++;
-    i++;
-  }
-}
+
 void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c) {
   for (int x = p1.x; x < p2.x; x++) {
     for (int y = p1.y; y < p2.y; y++) {
