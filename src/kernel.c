@@ -28,5 +28,10 @@ void kmain(void) {
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
+    kprintf("Booting LyraeOS!\n");
+
+    kprintf("\x7F Lyrae\n");
+
+    kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
 }
