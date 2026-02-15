@@ -3,7 +3,7 @@
 struct TTYCtx tty_ctx = {0};
 static size_t max_x_chars;
 static size_t max_y_chars;
-
+static uint32_t custom_color;
 bool init_tty(struct GfxCtx gfx_ctx) {
     tty_ctx.bytePitch = gfx_ctx.bytePitch;
     tty_ctx.fb_ptr = gfx_ctx.fb_ptr;
@@ -13,6 +13,10 @@ bool init_tty(struct GfxCtx gfx_ctx) {
     tty_ctx.col = 0;
     max_x_chars = tty_ctx.width / SCALED_WIDTH;
     max_y_chars = tty_ctx.height / SCALED_HEIGHT;
+    tty_ctx.bg = 0x000000;
+    tty_ctx.fg = 0xffffff;
+    custom_color = tty_ctx.fg;
+    gfx_fill_slow(tty_ctx.bg);
     return true;
 }
 void tty_scroll(size_t line) {
@@ -36,7 +40,7 @@ void kputchar(char c) {
         }
         return;
     }
-    gfx_draw_character(c, tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT); 
+    gfx_draw_character(c, tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT, custom_color, tty_ctx.bg);
     tty_ctx.col++;
     if (tty_ctx.col >= max_x_chars) {
         tty_ctx.col = 0;
@@ -129,6 +133,14 @@ int kprintf(const char* restrict format, ...) {
                 }
                 buf[i] = '\0';
                 kprint((const char*)buf, kstrlen(buf));
+            }
+            // temporary code to reset color
+            if (cur == 'r') {
+                custom_color = tty_ctx.fg;
+            }
+            // temporary code to set color
+            if (cur == 'o') {
+                custom_color = va_arg(params, uint32_t);
             }
             format++;
         }

@@ -117,9 +117,6 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_ctx.width = fb->width;
     gfx_ctx.fb_ptr = fb->address;
     gfx_ctx.framebuffer = fb;
-    gfx_ctx.bg_color = 0x333333;
-    gfx_ctx.fg_color = 0xababcb;
-    gfx_fill_slow(gfx_ctx.bg_color);
     init_tty(gfx_ctx);
     return true;
 }
@@ -153,14 +150,14 @@ void font_scale(uint8_t *buf, char c) {
   }
 }
 
-void gfx_draw_character(char c, int start_x, int start_y) {
+void gfx_draw_character(char c, int start_x, int start_y, uint32_t fg, uint32_t bg) {
   uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
   font_scale(buf, c);
   for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
     for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
       int x_iter = (x - start_x);
       int y_iter = (y - start_y);
-      gfx_set_pixel(x, y, buf[x_iter + y_iter*SCALED_WIDTH] ? gfx_ctx.fg_color : gfx_ctx.bg_color);
+      gfx_set_pixel(x, y, buf[x_iter + y_iter*SCALED_WIDTH] ? fg : bg);
     }
   }
 }

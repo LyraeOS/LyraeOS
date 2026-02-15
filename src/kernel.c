@@ -13,6 +13,11 @@ __attribute__((
     section(
         ".limine_requests"))) static volatile struct limine_framebuffer_request
     framebuffer_request = {.id = LIMINE_FRAMEBUFFER_REQUEST_ID, .revision = 0};
+__attribute__((
+    used,
+    section(
+        ".limine_requests"))) static volatile struct limine_memmap_request
+    memmap_request = {.id = LIMINE_MEMMAP_REQUEST_ID, .revision = 0};
 
 __attribute__((used,
                section(".limine_requests_start"))) static volatile uint64_t
@@ -31,7 +36,21 @@ void kmain(void) {
     kprintf("Booting LyraeOS!\n");
 
     kprintf("\x7F Lyrae\n");
-
+    kprintf("Available Memory Map Entries:\n");
+    const struct limine_memmap_response *mem_resp = memmap_request.response;
+    if (mem_resp == NULL) {
+        kprintf("No memory map :(\n");
+        hlt_loop();
+    }
+    kprintf("Count: {d}\n", mem_resp->entry_count);
+    for (uint64_t i = 0; i < mem_resp->entry_count; i++) {
+        struct limine_memmap_entry *entry = mem_resp->entries[i];
+        if (entry->type != LIMINE_MEMMAP_USABLE)
+            continue;
+        kprintf("[{o}Usable Entry{r}] : {o}{d}{r}\n", 0x00FF00, 0x5555ff, i);
+        kprintf("    length: {d} KiB\n", entry->length/1024);
+    }
+    
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
 }

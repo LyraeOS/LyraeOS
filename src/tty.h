@@ -12,6 +12,7 @@ struct TTYCtx {
     uint64_t width, height, bytePitch;
     volatile uint32_t *fb_ptr;
     size_t col, row;
+    uint32_t fg, bg;
 };
 struct GfxCtx;
 bool init_tty(struct GfxCtx gfx_ctx);
