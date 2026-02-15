@@ -8,11 +8,11 @@
 #include "util.h"
 #include "tty.h"
 
-#define FONT_WIDTH 5
-#define FONT_HEIGHT 6
-#define SCALE_FACTOR 3
-#define SCALED_WIDTH FONT_WIDTH*SCALE_FACTOR
-#define SCALED_HEIGHT FONT_HEIGHT*SCALE_FACTOR
+#define FONT_WIDTH 8
+#define FONT_HEIGHT 16
+#define SCALE_FACTOR 2
+#define SCALED_WIDTH (FONT_WIDTH*SCALE_FACTOR)
+#define SCALED_HEIGHT (FONT_HEIGHT*SCALE_FACTOR)
 
 struct GfxCtx {
   uint64_t width, height, bytePitch;

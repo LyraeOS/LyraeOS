@@ -28,7 +28,5 @@ void kmain(void) {
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
-    kprintf("Hello, world! {s}\n", "test"); 
-    kprintf("test of newlines", "test2"); 
     hlt_loop();
 }

@@ -15,23 +15,34 @@ bool init_tty(struct GfxCtx gfx_ctx) {
     max_y_chars = tty_ctx.height / SCALED_HEIGHT;
     return true;
 }
+void tty_scroll(size_t line) {
+    uint32_t* dest = (uint32_t*)tty_ctx.fb_ptr;
+    uint32_t* src = (uint32_t*)tty_ctx.fb_ptr + ((line*SCALED_HEIGHT) * tty_ctx.width);
+    uint32_t pixelSize = (tty_ctx.height - (line*SCALED_HEIGHT)) * tty_ctx.width;
+    uint32_t byteSize = pixelSize * sizeof(uint32_t);
+    memmove(dest, src, byteSize);
+    tty_ctx.row--;
+}
 
 void kputchar(char c) {
     //int line;
     if (c == '\n') {
         tty_ctx.col = 0;
-        if (tty_ctx.row++ == max_y_chars) {
+        tty_ctx.row++;
+        if (tty_ctx.row >= max_y_chars) {
             // SCROLL AT SOME POINT
+            tty_scroll(1);
 
         }
         return;
     }
-    gfx_draw_character(c, tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT);
-    if (tty_ctx.col++ == max_x_chars) {
+    gfx_draw_character(c, tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT); 
+    tty_ctx.col++;
+    if (tty_ctx.col >= max_x_chars) {
         tty_ctx.col = 0;
-        if (tty_ctx.row++ == max_y_chars) {
-            // SCROLL AT SOME POINT
-
+        tty_ctx.row++;
+        if (tty_ctx.row >= max_y_chars) {
+            tty_scroll(1);
         }
     }
 }
@@ -72,6 +83,52 @@ int kprintf(const char* restrict format, ...) {
             if (cur == 'c') {
                 char c = (char) va_arg(params, int);
                 kprint(&c, sizeof(c));
+            }
+            if (cur == 'd') {
+                int num = va_arg(params, int);
+                char buf[12];
+                int s = num;
+                int i = 0;
+                if (num < 0) {
+                    num = -num;
+                }
+                if (num == 0) {
+                    buf[i++] = '0';
+                }
+                while (num > 0) {
+                    buf[i++] = num % 10 + '0';
+                    num /= 10;
+                }
+                if (s < 0) {
+                    buf[i++] = '-';
+                }
+                for (int j = 0, k = i - 1; j < k; j++, k--) {
+                    char temp = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = temp;
+                }
+                buf[i] = '\0';
+                kprint((const char*)buf, kstrlen(buf));
+            }
+            if (cur == 'x') {
+                int num = va_arg(params, int);
+                char* nums = "0123456789ABCDEF";
+                char buf[12];
+                int i = 0;
+                if (num == 0) {
+                    buf[i++] = '0';
+                }
+                while (num > 0) {
+                    buf[i++] = nums[num % 16];
+                    num /= 16;
+                }
+                for (int j = 0, k = i - 1; j < k; j++, k--) {
+                    char temp = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = temp;
+                }
+                buf[i] = '\0';
+                kprint((const char*)buf, kstrlen(buf));
             }
             format++;
         }
