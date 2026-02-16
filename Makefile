@@ -51,7 +51,8 @@ override LDFLAGS += \
 	-static \
 	-z max-page-size=0x1000 \
 	--gc-sections \
-	-T linker.lds
+	-T linker.lds \
+	-no-pie
 
 override SRCFILES := $(shell find -L src -type f 2>/dev/null | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))

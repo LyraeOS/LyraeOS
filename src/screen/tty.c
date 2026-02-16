@@ -36,7 +36,6 @@ void kputchar(char c) {
         if (tty_ctx.row >= max_y_chars) {
             // SCROLL AT SOME POINT
             tty_scroll(1);
-
         }
         return;
     }
