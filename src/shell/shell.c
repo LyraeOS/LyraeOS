@@ -3,6 +3,7 @@ void shell_loop()
 {
     tty_clear();
     keyboard_pop(&keypress_queue);
+    kprintf("Welcome to {o}LyraeOS{r}!\n", 0xc603fc);
     kprintf("kernel@lyraeos $ ");
     char command_buf[50];
     for (;;) {
@@ -17,6 +18,8 @@ void shell_loop()
                 }
                 else if (strcmp(command_buf, "clear")) {
                     tty_clear();
+                } else if (!strcmp(command_buf, "")) {
+                    kprintf("Unknown command: {s}\n", command_buf);
                 }
                 kprintf("kernel@lyraeos $ ");
                 memset(command_buf, 0, 50);
