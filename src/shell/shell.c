@@ -72,7 +72,8 @@ void command_handler(char *buf)
             int size = atoi(argv[1]);
             if (size < 0)
                 size = 0;
-            sierpinski(vec2_new(1279, 799), vec2_new(1279/2, 1), vec2_new(1, 799), size);
+            ScreenScale sc = tty_get_screen_size();
+            sierpinski(vec2_new(sc.x-1, sc.y-1), vec2_new((sc.x-1)/2, 1), vec2_new(1, sc.y-1), size);
         }
         
     }
