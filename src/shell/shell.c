@@ -49,7 +49,9 @@ void command_handler(char *buf)
     else if (strcmp(argv[0], "clear"))
     {
         tty_clear();
-    } else if (strcmp(argv[0], "panic")) {
+    }
+    else if (strcmp(argv[0], "panic"))
+    {
         panic("uh oh :(");
     }
     else if (strcmp(argv[0], "echo"))
@@ -74,29 +76,26 @@ void shell_loop()
     char command_buf[50];
     for (;;)
     {
-        if (!keyboard_empty(&keypress_queue))
+        char c = wait_for_key(&keypress_queue);
+        if (c == '\n')
         {
-            char c = keyboard_pop(&keypress_queue);
-            if (c == '\n')
+            kputchar('\n');
+            command_handler(command_buf);
+            kprintf("kernel@lyraeos $ ");
+            memset(command_buf, 0, 50);
+        }
+        else if (c == '\x08')
+        {
+            if (kstrlen(command_buf) > 0)
             {
-                kputchar('\n');
-                command_handler(command_buf);
-                kprintf("kernel@lyraeos $ ");
-                memset(command_buf, 0, 50);
+                command_buf[kstrlen(command_buf) - 1] = '\0';
+                tty_backspace();
             }
-            else if (c == '\x08')
-            {
-                if (kstrlen(command_buf) > 0)
-                {
-                    command_buf[kstrlen(command_buf) - 1] = '\0';
-                    tty_backspace();
-                }
-            }
-            else
-            {
-                charcat(command_buf, c);
-                kputchar(c);
-            }
+        }
+        else
+        {
+            charcat(command_buf, c);
+            kputchar(c);
         }
     }
 }

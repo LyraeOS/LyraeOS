@@ -66,7 +66,9 @@ void keyboard_interrupt_handler() {
 }
 char wait_for_key(struct KeyboardQueue *q) {
     for (;;){
-        if (!keyboard_empty(q))
+        if (!keyboard_empty(q)) {
             return keyboard_pop(q);
+        }
+        asm("hlt");
     }
 }
