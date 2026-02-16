@@ -14,4 +14,5 @@ void charcat(char *s, char c);
 bool strcmp(char *s1, char *s2);
 void wait_ms(uint64_t ms);
 int atoi(const char *s);
+void panic(const char* message);
 #endif

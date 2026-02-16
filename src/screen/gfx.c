@@ -248,3 +248,6 @@ void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
   gfx_draw_line(p2, p3, c);
   gfx_draw_line(p3, p1, c);
 }
+uint32_t rgb_to_hex(int r, int g, int b) {   
+    return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
+}

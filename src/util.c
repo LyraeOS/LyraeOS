@@ -61,3 +61,13 @@ int atoi(const char *s) {
   }
   return num;
 }
+void panic(const char* message) {
+  gfx_fill_slow(0xFF0000);
+  ScreenScale s = tty_get_screen_size();
+  size_t cx = s.x/SCALED_WIDTH;
+  size_t cy = s.y/SCALED_HEIGHT;
+  tty_set_cursor_pos((cx/2)-(kstrlen(message)+5), (cy/2)-1);
+  kprintf("PANIC: {s}", message);
+  asm volatile ("cli");
+  hlt_loop();
+}

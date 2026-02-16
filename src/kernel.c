@@ -29,11 +29,12 @@ __attribute__((used,
 
 __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
-
+extern void fpu_init();
 void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hlt_loop();
     }
+    fpu_init();
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
@@ -47,8 +48,7 @@ void kmain(void) {
     idt_install();
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
-        kprintf("No memory map :(\n");
-        hlt_loop();
+        panic("No memory map :(");
     }
     kprintf("[MEM] => Getting largest memory page...\n");
     uint64_t largest_page_size = 0, index = 0;

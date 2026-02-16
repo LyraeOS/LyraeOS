@@ -28,8 +28,6 @@ override CFLAGS += \
 	-mabi=sysv \
 	-mno-80387 \
 	-mno-mmx \
-	-mno-sse \
-	-mno-sse2 \
 	-mno-red-zone \
 	-mcmodel=kernel \
 	-Werror
@@ -97,7 +95,7 @@ bin/image.hdd: bin/$(OUTPUT)
 	mcopy -i bin/image.hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT
 
 run: bin/image.hdd
-	qemu-system-x86_64 -hda bin/image.hdd
+	qemu-system-x86_64 -hda bin/image.hdd -accel kvm -m 2G
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/image.hdd
 	sudo dd if=bin/image.hdd of=/dev/sdb oflag=direct bs=1M status=progress

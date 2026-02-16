@@ -25,4 +25,5 @@ int kprintf(const char* restrict format, ...);
 void tty_clear();
 void tty_backspace();
 ScreenScale tty_get_screen_size();
+void tty_set_cursor_pos(size_t x, size_t y);
 #endif
