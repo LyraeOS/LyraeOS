@@ -4,6 +4,6 @@
 #include "mem.h"
 #include "screen/gfx.h"
 
-void ConwaysMain(void);
+void ConwaysMain(int cell_size);
 
 #endif

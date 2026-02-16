@@ -49,3 +49,15 @@ bool strcmp(char *s1, char *s2) {
   }
   return *s1 == *s2;
 }
+int atoi(const char *s) {
+  int num = 0;
+  for (int i = 0; s[i] != '\0'; i++) {
+    if (s[i] >= '0' && s[i] <= '9') {
+      num = num * 10 + (s[i] - '0');
+    }
+    else {
+      break;
+    }
+  }
+  return num;
+}

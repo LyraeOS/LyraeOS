@@ -1,4 +1,49 @@
 #include "shell.h"
+
+int split_args(char* buf, char** argv) {
+    int argc = 0;
+
+    while (*buf && argc < MAX_ARGS) {
+        while (*buf == ' ') buf++;
+        if (!*buf) break;
+
+        argv[argc++] = buf;
+
+        while (*buf && *buf != ' ') buf++;
+        if (*buf) {
+            *buf = 0;
+            buf++;
+        }
+    }
+
+    return argc;
+}
+void command_handler(char* buf) {
+    char *argv[MAX_ARGS];
+    int argc = split_args(buf, argv);
+    if (argc == 0) return;
+
+    if (strcmp(argv[0], "gol")) {
+        if (argc < 2) {
+            kprintf("Usage:\ngol [cell size > 2 ]\n");
+        } else {
+            int size = atoi(argv[1]);
+            if (size < 2) size = 2;
+            ConwaysMain(size);
+            tty_clear();
+        }
+    }
+    else if (strcmp(argv[0], "clear")) {
+        tty_clear();
+    } else if (strcmp(argv[0], "echo")) {
+        for (int i = 1; i < argc; i++) {
+            kprintf("{s} ", argv[i]);
+        }
+        kprintf("\n");
+    } else if (!strcmp(argv[0], "")) {
+        kprintf("Unknown command: {s}\n", argv[0]);
+    }
+}
 void shell_loop()
 {
     tty_clear();
@@ -12,15 +57,7 @@ void shell_loop()
             char c = keyboard_pop(&keypress_queue);
             if (c == '\n') {
                 kputchar('\n');
-                if (strcmp(command_buf, "gol")) {
-                    ConwaysMain();
-                    tty_clear();
-                }
-                else if (strcmp(command_buf, "clear")) {
-                    tty_clear();
-                } else if (!strcmp(command_buf, "")) {
-                    kprintf("Unknown command: {s}\n", command_buf);
-                }
+                command_handler(command_buf);
                 kprintf("kernel@lyraeos $ ");
                 memset(command_buf, 0, 50);
             } else if (c == '\x08') {

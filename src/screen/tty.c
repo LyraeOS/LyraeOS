@@ -157,3 +157,9 @@ void tty_backspace() {
     tty_ctx.col--;
     gfx_draw_character(' ', tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT, custom_color, tty_ctx.bg);
 }
+ScreenScale tty_get_screen_size() {
+    ScreenScale sc;
+    sc.x = tty_ctx.width;
+    sc.y = tty_ctx.height;
+    return sc;
+}
