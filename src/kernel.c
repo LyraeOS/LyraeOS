@@ -29,26 +29,6 @@ __attribute__((used,
 __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
-typedef struct Block {
-    size_t size;
-    bool free;
-    struct Block* next;
-    struct Block* prev;
-} Block;
-#define ALIGN 16
-size_t align(size_t n) {
-    return (n + (ALIGN - 1)) & ~(ALIGN - 1);
-}
-
-Block* heap_head = NULL;
-void init_heap(void* heap_start, size_t heap_size) {
-    heap_head = (Block*)heap_start;
-    kprintf("Heap size: {d}, block size: {d}, sub: {d}\n.", heap_size, sizeof(Block), heap_size-sizeof(Block));
-    // heap_head->size = heap_size-sizeof(Block);
-    // heap_head->free = true;
-    // heap_head->next = NULL;
-    // heap_head->prev = NULL;
-}
 void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hlt_loop();
@@ -63,7 +43,6 @@ void kmain(void) {
     gdt_install();
     kprintf("[IDT] => Init IDT\n");
     idt_install();
-    asm volatile ("sti");
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
         kprintf("No memory map :(\n");
@@ -80,9 +59,6 @@ void kmain(void) {
         }
     }
     kprintf("[MEM] => largest page id: {d}\n", index);
-    struct limine_memmap_entry *largest_mem_page = mem_resp->entries[index];
-    init_heap((void*)largest_mem_page->base, 65536); // allocating 64MiB
-    for (;;) {
-    }
     kprintf("OS Functions Complete, Halting...\n");
+    hlt_loop();
 }

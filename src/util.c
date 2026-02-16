@@ -1,4 +1,5 @@
 #include "util.h"
+#include "intr/idt.h"
 size_t kstrlen(const char* str) {
     size_t len = 0;
     while (str[len]) {
@@ -28,4 +29,9 @@ uint8_t inb(uint16_t port) {
                    : "Nd"(port)
                    : "memory");
     return ret;
+}
+void wait_ms(uint64_t ms) {
+  uint64_t end_time = timer_ticks + ms;
+  while (timer_ticks < end_time) {
+  }
 }
