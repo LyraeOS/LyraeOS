@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "gdt.h"
+#include "shell/shell.h"
 #include "intr/idt.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
@@ -41,6 +42,7 @@ void kmain(void) {
     kprintf("\x7F Lyrae\n");
     kprintf("[GDT] => Init GDT\n");
     gdt_install();
+    keyboard_init(&keypress_queue);
     kprintf("[IDT] => Init IDT\n");
     idt_install();
     const struct limine_memmap_response *mem_resp = memmap_request.response;
@@ -59,6 +61,7 @@ void kmain(void) {
         }
     }
     kprintf("[MEM] => largest page id: {d}\n", index);
+    shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
 }

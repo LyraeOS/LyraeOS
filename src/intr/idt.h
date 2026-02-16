@@ -6,6 +6,7 @@
 #include "screen/tty.h"
 #include "mem.h"
 #include "intr/pic.h"
+#include "intr/keyboard.h"
 
 
 struct __attribute__((packed)) idt_entry {
@@ -25,10 +26,12 @@ struct __attribute__((packed, aligned(16))) idt_ptr {
 
 
 extern void idt_load();
-extern void isr32(void);
+extern void timer_irq(void);
+extern void keyboard_irq(void);
 void idt_set_gate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags, uint8_t ist);
 void init_pit(uint32_t frequency);
 void idt_install();
 extern volatile uint64_t timer_ticks;
 void timer_interrupt(uint64_t irq_n);
+
 #endif

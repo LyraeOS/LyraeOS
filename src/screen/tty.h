@@ -19,4 +19,6 @@ bool init_tty(struct GfxCtx gfx_ctx);
 void kputchar(char c);
 void tty_scroll(size_t line);
 int kprintf(const char* restrict format, ...);
+void tty_clear();
+void tty_backspace();
 #endif

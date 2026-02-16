@@ -146,3 +146,14 @@ int kprintf(const char* restrict format, ...) {
     }
     return 1;
 }
+void tty_clear() {
+    gfx_fill_slow(tty_ctx.bg);
+    tty_ctx.row = 0;
+    tty_ctx.col = 0;
+}
+void tty_backspace() {
+    if (tty_ctx.col < 1)
+        return;
+    tty_ctx.col--;
+    gfx_draw_character(' ', tty_ctx.col*SCALED_WIDTH, tty_ctx.row*SCALED_HEIGHT, custom_color, tty_ctx.bg);
+}

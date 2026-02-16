@@ -13,7 +13,7 @@ void remap_pic(int offset1, int offset2) {
     outb(PIC1_DATA, ICW4_8086);
     outb(PIC2_DATA, ICW4_8086);
 
-    outb(PIC1_DATA, 0xFE);
+    outb(PIC1_DATA, 0xFC);
     outb(PIC2_DATA, 0xFF);
 }
 void pic_send_eoi(uint8_t irq) {

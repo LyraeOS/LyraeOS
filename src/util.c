@@ -35,3 +35,17 @@ void wait_ms(uint64_t ms) {
   while (timer_ticks < end_time) {
   }
 }
+void charcat(char *s, char c) {
+  while (*s != '\0') {
+      s++;
+  }
+  *s = c;
+  *(s + 1) = '\0';
+}
+bool strcmp(char *s1, char *s2) {
+  while (*s1 && *s2) {
+    if (*s1++ != *s2++)
+      return false;
+  }
+  return *s1 == *s2;
+}
