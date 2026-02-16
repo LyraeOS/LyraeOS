@@ -2,6 +2,7 @@
 #define SHELL_H
 #include "intr/keyboard.h"
 #include "gol.h"
+#include "fractal.h"
 
 #define MAX_ARGS 8
 int split_args(char *buf, char **argv);

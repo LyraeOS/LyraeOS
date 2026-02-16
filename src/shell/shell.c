@@ -62,6 +62,20 @@ void command_handler(char *buf)
         }
         kprintf("\n");
     }
+    else if (strcmp(argv[0], "serp")) {
+        if (argc < 2)
+        {
+            kprintf("Usage:\nserp [iterations size >= 0 ]\n");
+        }
+        else
+        {
+            int size = atoi(argv[1]);
+            if (size < 0)
+                size = 0;
+            sierpinski(vec2_new(1279, 799), vec2_new(1279/2, 1), vec2_new(1, 799), size);
+        }
+        
+    }
     else if (!strcmp(argv[0], ""))
     {
         kprintf("Unknown command: {s}\n", argv[0]);
