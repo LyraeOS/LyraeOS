@@ -25,4 +25,5 @@ int keyboard_full(struct KeyboardQueue *q);
 void keyboard_push(struct KeyboardQueue *q, char c);
 char keyboard_pop(struct KeyboardQueue *q);
 void keyboard_interrupt_handler();
+char wait_for_key(struct KeyboardQueue *q);
 #endif

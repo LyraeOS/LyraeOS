@@ -64,3 +64,9 @@ void keyboard_interrupt_handler() {
     }
     pic_send_eoi(33);
 }
+char wait_for_key(struct KeyboardQueue *q) {
+    for (;;){
+        if (!keyboard_empty(q))
+            return keyboard_pop(q);
+    }
+}
