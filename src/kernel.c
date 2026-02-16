@@ -1,10 +1,13 @@
-#include "gfx.h"
+#include "screen/gfx.h"
+#include "limine.h"
 #include "mem.h"
 #include "util.h"
-#include "tty.h"
+#include "screen/tty.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "gdt.h"
+#include "intr/idt.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
     limine_base_revision[] = LIMINE_BASE_REVISION(4);
@@ -26,6 +29,26 @@ __attribute__((used,
 __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
+typedef struct Block {
+    size_t size;
+    bool free;
+    struct Block* next;
+    struct Block* prev;
+} Block;
+#define ALIGN 16
+size_t align(size_t n) {
+    return (n + (ALIGN - 1)) & ~(ALIGN - 1);
+}
+
+Block* heap_head = NULL;
+void init_heap(void* heap_start, size_t heap_size) {
+    heap_head = (Block*)heap_start;
+    kprintf("Heap size: {d}, block size: {d}, sub: {d}\n.", heap_size, sizeof(Block), heap_size-sizeof(Block));
+    // heap_head->size = heap_size-sizeof(Block);
+    // heap_head->free = true;
+    // heap_head->next = NULL;
+    // heap_head->prev = NULL;
+}
 void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hlt_loop();
@@ -36,21 +59,30 @@ void kmain(void) {
     kprintf("Booting LyraeOS!\n");
 
     kprintf("\x7F Lyrae\n");
-    kprintf("Available Memory Map Entries:\n");
+    kprintf("[GDT] => Init GDT\n");
+    gdt_install();
+    kprintf("[IDT] => Init IDT\n");
+    idt_install();
+    asm volatile ("sti");
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
         kprintf("No memory map :(\n");
         hlt_loop();
     }
-    kprintf("Count: {d}\n", mem_resp->entry_count);
+    kprintf("[MEM] => Getting largest memory page...\n");
+    uint64_t largest_page_size = 0, index = 0;
     for (uint64_t i = 0; i < mem_resp->entry_count; i++) {
         struct limine_memmap_entry *entry = mem_resp->entries[i];
-        if (entry->type != LIMINE_MEMMAP_USABLE)
-            continue;
-        kprintf("[{o}Usable Entry{r}] : {o}{d}{r}\n", 0x00FF00, 0x5555ff, i);
-        kprintf("    length: {d} KiB\n", entry->length/1024);
+        if (entry->length > largest_page_size && entry->type == LIMINE_MEMMAP_USABLE) {
+            kprintf("[MEM] => {o}new largest page{r} -> {d} MiB {d} KiB\n", 0x00FF00, entry->length/1024/1024, (entry->length/1024)%1024);
+            largest_page_size = entry->length;
+            index = i;
+        }
     }
-    
+    kprintf("[MEM] => largest page id: {d}\n", index);
+    struct limine_memmap_entry *largest_mem_page = mem_resp->entries[index];
+    init_heap((void*)largest_mem_page->base, 65536); // allocating 64MiB
+    for (;;) {
+    }
     kprintf("OS Functions Complete, Halting...\n");
-    hlt_loop();
 }
