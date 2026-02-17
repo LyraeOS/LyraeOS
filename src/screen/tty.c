@@ -240,6 +240,8 @@ ScreenScale tty_get_screen_size()
 }
 void tty_set_cursor_pos(size_t x, size_t y)
 {
+    if ((x > tty_max_chars_x) || (y > tty_max_chars_y))
+        return;
     tty_ctx.col = x;
     tty_ctx.row = y;
 }
