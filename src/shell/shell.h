@@ -4,6 +4,7 @@
 #include "gol.h"
 #include "fractal.h"
 #include "minesweeper.h"
+#include "matrix.h"
 
 #define MAX_ARGS 8
 int split_args(char *buf, char **argv);

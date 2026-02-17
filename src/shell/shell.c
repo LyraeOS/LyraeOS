@@ -85,6 +85,11 @@ void command_handler(char *buf)
             ScreenScale sc = tty_get_screen_size();
             sierpinski(vec2_new(sc.x - 1, sc.y - 1), vec2_new((sc.x - 1) / 2, 1), vec2_new(1, sc.y - 1), size);
         }
+    } else if (strcmp(argv[0], "matrix")) {
+        tty_set_cursor_enabled(false);
+        matrix();
+        tty_set_cursor_enabled(true);
+        tty_clear();
     }
     else if (!strcmp(argv[0], ""))
     {

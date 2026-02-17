@@ -33,6 +33,7 @@ uint8_t inb(uint16_t port) {
 void wait_ms(uint64_t ms) {
   uint64_t end_time = timer_ticks + ms;
   while (timer_ticks < end_time) {
+    asm("hlt");
   }
 }
 void charcat(char *s, char c) {
