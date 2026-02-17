@@ -30,4 +30,5 @@ void tty_set_cursor_pos(size_t x, size_t y);
 void tty_draw_cursor();
 void tty_erase_cursor(size_t lastx, size_t lasty);
 void tty_update_cursor();
+void tty_set_cursor_enabled(bool enabled);
 #endif

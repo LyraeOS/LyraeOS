@@ -3,5 +3,6 @@ if [ ! -d "./limine" ]; then
     ./setup.sh
 fi
 
-make clean
+rm bin/image.hdd
+rm bin/LyraeOS
 make run

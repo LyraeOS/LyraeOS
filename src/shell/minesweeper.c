@@ -70,6 +70,8 @@ void drawGrid(void) {
 int click(int x, int y) {
     if (grid[x][y] == 9) {
         return 2;
+    } else if (grid[x][y] == -10) {
+        return 1;
     } else {
         amountClicked++;
         if (grid[x][y] > 0) {
@@ -79,10 +81,10 @@ int click(int x, int y) {
             drawSquare(x,y);
             for (int i = 0; i < 8; i++) {//Clicking neighbors
                 int xi = neighbors[i][0], yi = neighbors[i][1];
-                if (x + xi >= GRIDX || x + xi < 0 || y + yi < 0 || y + yi >= GRIDY || grid[x + xi][y + yi] >= 10) {
+                if (x + xi >= GRIDX || x + xi < 0 || y + yi < 0 || y + yi >= GRIDY || grid[x + xi][y + yi] >= 10 || grid[x+xi][y+yi] == -10) {
                     continue;
                 }
-                wait_ms(5);
+                wait_ms(10);
                 click(x+xi,y+yi);
                 drawSquare(x + xi, y + yi);
             }
@@ -105,10 +107,11 @@ void flag(int x, int y) {
 
 void minesweeperMain(void) {
     tty_clear();
-    int numMines = (GRIDX * GRIDY * 3)/10;
-    for (int x = 0; x < RECTX; x++)
+    amountNeeded = 0;
+    int numMines = (GRIDX * GRIDY * 4)/10;
+    for (int x = 0; x < GRIDX; x++)
     {
-        for (int y = 0; y < RECTY; y++)
+        for (int y = 0; y < GRIDY; y++)
         {
             if (numMines <= 0) {
                 break;
@@ -196,6 +199,15 @@ void minesweeperMain(void) {
                 drawSquare(xc, yc);
                 xc++;
             }
+        } else if (key == ';') {
+            for (int x = 0; x < GRIDX; x++) { //Defines squares as numbers for how many mines are around them
+                for (int y = 0; y < GRIDY; y++) {
+                    if (grid[x][y] == 9) {
+                        flag(x,y);
+                    }
+                    drawSquare(x,y);
+                }
+            }
         }
         drawSquare(xc, yc);
     }
@@ -205,9 +217,8 @@ void minesweeperMain(void) {
             grid[x][y] = 0;
         }
     }
-    amountClicked = 0;
 
-    if (amountClicked == amountNeeded) {
+    if (amountClicked >= amountNeeded) {
         ConwaysMain(2);
         tty_clear();
     } else {

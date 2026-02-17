@@ -42,12 +42,16 @@ void command_handler(char *buf)
             int size = atoi(argv[1]);
             if (size < 2)
                 size = 2;
+            tty_set_cursor_enabled(false);
             ConwaysMain(size);
+            tty_set_cursor_enabled(true);
             tty_clear();
         }
     }
     else if (strcmp(argv[0], "mine")) {
+        tty_set_cursor_enabled(false);
         minesweeperMain();
+        tty_set_cursor_enabled(true);
     }
     else if (strcmp(argv[0], "clear"))
     {

@@ -287,10 +287,14 @@ void tty_erase_cursor(size_t lastx, size_t lasty)
         return;
     if (y2 > tty_ctx.height)
         y2 = tty_ctx.height;
-    gfx_draw_rectangle_filled(
-        vec2_new(lastx * SCALED_WIDTH, y1),
-        vec2_new(lastx * SCALED_WIDTH + SCALED_WIDTH, y2),
-        tty_ctx.bg);
+    if (cursor_enabled)
+        gfx_draw_rectangle_filled(
+            vec2_new(lastx * SCALED_WIDTH, y1),
+            vec2_new(lastx * SCALED_WIDTH + SCALED_WIDTH, y2),
+            tty_ctx.bg);
+}
+void tty_set_cursor_enabled(bool enabled) {
+    cursor_enabled = enabled;
 }
 void tty_draw_cursor()
 {
