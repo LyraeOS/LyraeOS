@@ -20,7 +20,7 @@ const int neighbors[8][8] = { //Array for what indexes to check
 };
 
 int amountClicked = 0;
-int amountNeeded = (GRIDX * GRIDY) - (GRIDX * GRIDY * 3)/10;
+int amountNeeded = (GRIDX * GRIDY) - ((GRIDX * GRIDY * 3)/10);
 
 void drawFlag(int x, int y) {
     gfx_draw_rectangle_filled(vec2_new(x * RECTX, y * RECTY), vec2_new(x * RECTX + RECTX, y * RECTY + RECTY), 0x995511);
@@ -107,29 +107,30 @@ void flag(int x, int y) {
 
 void minesweeperMain(void) {
     tty_clear();
-    amountNeeded = 0;
-    int numMines = (GRIDX * GRIDY * 4)/10;
-    for (int x = 0; x < GRIDX; x++)
-    {
-        for (int y = 0; y < GRIDY; y++)
+    amountClicked = 0;
+    int numMines = (GRIDX * GRIDY * 3)/10;
+    while (numMines>0){
+        for (int x = 0; x < GRIDX; x++)
         {
-            if (numMines <= 0) {
-                break;
-            }
-            uint64_t v = (uint64_t)x * 0x27d4eb2d;
-            v ^= (uint64_t)y * 0x165667b19e3779f9ULL;
-            v ^= timer_ticks;
-            v ^= v >> 33;
-            v *= 0xff51afd7ed558ccdULL;
-            v ^= v >> 33;
+            for (int y = 0; y < GRIDY; y++)
+            {
+                if (numMines <= 0) {
+                    break;
+                }
+                uint64_t v = (uint64_t)x * 0x27d4eb2d;
+                v ^= (uint64_t)y * 0x165667b19e3779f9ULL;
+                v ^= timer_ticks;
+                v ^= v >> 33;
+                v *= 0xff51afd7ed558ccdULL;
+                v ^= v >> 33;
 
-            if (v%11 == 0) {
-                numMines--;
-                grid[x][y] = 9;
+                if (v%11 == 0 && grid[x][y] != 9) {
+                    numMines--;
+                    grid[x][y] = 9;
+                }
             }
         }
     }
-
     for (int x = 0; x < GRIDX; x++) { //Defines squares as numbers for how many mines are around them
         for (int y = 0; y < GRIDY; y++) {
             if (grid[x][y] != 9) {
@@ -204,6 +205,18 @@ void minesweeperMain(void) {
                 for (int y = 0; y < GRIDY; y++) {
                     if (grid[x][y] == 9) {
                         flag(x,y);
+                    }
+                    drawSquare(x,y);
+                }
+            }
+        } else if (key == ':') {
+            for (int x = 0; x < GRIDX; x++) { //Defines squares as numbers for how many mines are around them
+                for (int y = 0; y < GRIDY; y++) {
+                    if (grid[x][y] == 9) {
+                        flag(x,y);
+                    } else {
+                        click(x,y);
+                        wait_ms(5);
                     }
                     drawSquare(x,y);
                 }
