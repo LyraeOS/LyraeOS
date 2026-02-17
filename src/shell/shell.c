@@ -61,8 +61,11 @@ void command_handler(char *buf)
             kprintf("{s} ", argv[i]);
         }
         kprintf("\n");
+    } else if (strcmp(argv[0], "cur")) {
+        tty_draw_cursor();
     }
-    else if (strcmp(argv[0], "serp")) {
+    else if (strcmp(argv[0], "serp"))
+    {
         if (argc < 2)
         {
             kprintf("Usage:\nserp [iterations size >= 0 ]\n");
@@ -73,9 +76,8 @@ void command_handler(char *buf)
             if (size < 0)
                 size = 0;
             ScreenScale sc = tty_get_screen_size();
-            sierpinski(vec2_new(sc.x-1, sc.y-1), vec2_new((sc.x-1)/2, 1), vec2_new(1, sc.y-1), size);
+            sierpinski(vec2_new(sc.x - 1, sc.y - 1), vec2_new((sc.x - 1) / 2, 1), vec2_new(1, sc.y - 1), size);
         }
-        
     }
     else if (!strcmp(argv[0], ""))
     {

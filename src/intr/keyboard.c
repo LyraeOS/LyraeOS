@@ -69,6 +69,7 @@ char wait_for_key(struct KeyboardQueue *q) {
         if (!keyboard_empty(q)) {
             return keyboard_pop(q);
         }
+        tty_update_cursor();
         asm("hlt");
     }
 }

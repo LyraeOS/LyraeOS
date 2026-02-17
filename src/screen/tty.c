@@ -4,6 +4,7 @@ struct TTYCtx tty_ctx = {0};
 size_t tty_max_chars_x;
 size_t tty_max_chars_y;
 static uint32_t custom_color;
+bool cursor_enabled = true;
 bool init_tty(struct GfxCtx gfx_ctx)
 {
     tty_ctx.bytePitch = gfx_ctx.bytePitch;
@@ -22,37 +23,62 @@ bool init_tty(struct GfxCtx gfx_ctx)
 }
 void tty_scroll(size_t line)
 {
+    if (line == 0 || (line * SCALED_HEIGHT) >= tty_ctx.height)
+        return;
+
+    tty_erase_cursor(tty_ctx.col, tty_ctx.row);
     uint32_t *dest = (uint32_t *)tty_ctx.fb_ptr;
     uint32_t *src = (uint32_t *)tty_ctx.fb_ptr + ((line * SCALED_HEIGHT) * tty_ctx.width);
     uint32_t pixelSize = (tty_ctx.height - (line * SCALED_HEIGHT)) * tty_ctx.width;
     uint32_t byteSize = pixelSize * sizeof(uint32_t);
     memmove(dest, src, byteSize);
-    tty_ctx.row--;
-}
 
+    size_t y1 = (tty_max_chars_y - 1) * SCALED_HEIGHT;
+    size_t y2 = y1 + SCALED_HEIGHT + SCALE_FACTOR;
+    if (y2 > tty_ctx.height)
+        y2 = tty_ctx.height;
+
+    gfx_draw_rectangle_filled(
+        vec2_new(0, y1),
+        vec2_new(tty_ctx.width, y2),
+        tty_ctx.bg);
+
+    if (tty_ctx.row >= line)
+        tty_set_cursor_pos(0, tty_ctx.row - line);
+    else
+        tty_set_cursor_pos(0, 0);
+
+    tty_draw_cursor();
+}
 void kputchar(char c)
 {
     // int line;
     if (c == '\n')
     {
+        tty_erase_cursor(tty_ctx.col, tty_ctx.row);
         tty_ctx.col = 0;
-        tty_ctx.row++;
-        if (tty_ctx.row >= tty_max_chars_y)
+        if (tty_ctx.row >= (tty_max_chars_y))
         {
-            // SCROLL AT SOME POINT
             tty_scroll(1);
+        }
+        else
+        {
+            tty_set_cursor_pos(0, tty_ctx.row + 1);
         }
         return;
     }
     gfx_draw_character(c, tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.bg);
-    tty_ctx.col++;
-    if (tty_ctx.col >= tty_max_chars_x)
+    tty_set_cursor_pos(tty_ctx.col + 1, tty_ctx.row);
+    if (tty_ctx.col >= tty_max_chars_x - 1)
     {
         tty_ctx.col = 0;
-        tty_ctx.row++;
-        if (tty_ctx.row >= tty_max_chars_y)
+        if (tty_ctx.row > tty_max_chars_y)
         {
             tty_scroll(1);
+        }
+        else
+        {
+            tty_set_cursor_pos(0, tty_ctx.row + 1);
         }
     }
 }
@@ -221,14 +247,13 @@ int kprintf(const char *restrict format, ...)
 void tty_clear()
 {
     gfx_fill_slow(tty_ctx.bg);
-    tty_ctx.row = 0;
-    tty_ctx.col = 0;
+    tty_set_cursor_pos(0, 0);
 }
 void tty_backspace()
 {
     if (tty_ctx.col < 1)
         return;
-    tty_ctx.col--;
+    tty_set_cursor_pos(tty_ctx.col - 1, tty_ctx.row);
     gfx_draw_character(' ', tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.bg);
 }
 ScreenScale tty_get_screen_size()
@@ -240,6 +265,66 @@ ScreenScale tty_get_screen_size()
 }
 void tty_set_cursor_pos(size_t x, size_t y)
 {
+    size_t lastx = tty_ctx.col, lasty = tty_ctx.row;
+    if (x >= tty_max_chars_x)
+        x = tty_max_chars_x - 1;
+    if (y >= tty_max_chars_y)
+        y = tty_max_chars_y - 1;
+    if (lastx >= tty_max_chars_x)
+        lastx = tty_max_chars_x - 1;
+    if (lasty >= tty_max_chars_y)
+        lasty = tty_max_chars_y - 1;
     tty_ctx.col = x;
     tty_ctx.row = y;
+    tty_erase_cursor(lastx, lasty);
+    tty_draw_cursor();
+}
+void tty_erase_cursor(size_t lastx, size_t lasty)
+{
+    size_t y1 = lasty * SCALED_HEIGHT + SCALED_HEIGHT;
+    size_t y2 = y1 + SCALE_FACTOR;
+    if (y1 >= tty_ctx.height)
+        return;
+    if (y2 > tty_ctx.height)
+        y2 = tty_ctx.height;
+    gfx_draw_rectangle_filled(
+        vec2_new(lastx * SCALED_WIDTH, y1),
+        vec2_new(lastx * SCALED_WIDTH + SCALED_WIDTH, y2),
+        tty_ctx.bg);
+}
+void tty_draw_cursor()
+{
+    size_t y1 = tty_ctx.row * SCALED_HEIGHT + SCALED_HEIGHT;
+    size_t y2 = y1 + SCALE_FACTOR;
+    if (y1 >= tty_ctx.height)
+        return;
+    if (y2 > tty_ctx.height)
+        y2 = tty_ctx.height;
+    if (cursor_enabled)
+        gfx_draw_rectangle_filled(
+            vec2_new(tty_ctx.col * SCALED_WIDTH, y1),
+            vec2_new(tty_ctx.col * SCALED_WIDTH + SCALED_WIDTH, y2),
+            custom_color);
+}
+static uint64_t last_blink = 0;
+static bool cursor_visible = false;
+void tty_update_cursor()
+{
+    const uint64_t BLINK_INTERVAL = 500;
+
+    if (timer_ticks - last_blink < BLINK_INTERVAL)
+        return;
+
+    last_blink = timer_ticks;
+
+    if (cursor_visible)
+    {
+        tty_erase_cursor(tty_ctx.col, tty_ctx.row);
+        cursor_visible = false;
+    }
+    else
+    {
+        tty_draw_cursor();
+        cursor_visible = true;
+    }
 }
