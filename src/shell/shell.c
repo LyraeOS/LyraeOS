@@ -46,6 +46,9 @@ void command_handler(char *buf)
             tty_clear();
         }
     }
+    else if (strcmp(argv[0], "mine")) {
+        minesweeperMain();
+    }
     else if (strcmp(argv[0], "clear"))
     {
         tty_clear();
