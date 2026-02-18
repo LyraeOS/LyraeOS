@@ -54,7 +54,7 @@ void drawSquare(int x, int y) {
             gfx_draw_rectangle_filled(vec2_new(x * RECTX, y * RECTY), vec2_new(x * RECTX + RECTX, y * RECTY + RECTY), 0xDDDDDD);
         }
         if (grid[x][y] != -10) {
-            gfx_draw_character('0' + grid[x][y] * -1, x * RECTX + RECTX/2 - 8, y * RECTY + RECTY/2 - 8, 0x000000, 0xFFFFFF);
+            gfx_draw_character_transparent('0' + grid[x][y] * -1, x * RECTX + RECTX/2 - 8, y * RECTY + RECTY/2 - 8, 0x000000);
         }
     }
 }
@@ -72,6 +72,8 @@ int click(int x, int y) {
         return 2;
     } else if (grid[x][y] == -10) {
         return 1;
+    } else if (grid[x][y] > 9) {
+        return 1; //not sure what you want the return code to be?
     } else {
         amountClicked++;
         if (grid[x][y] > 0) {

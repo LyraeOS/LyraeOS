@@ -161,6 +161,20 @@ void gfx_draw_character(char c, int start_x, int start_y, uint32_t fg, uint32_t 
     }
   }
 }
+void gfx_draw_character_transparent(char c, int start_x, int start_y, uint32_t fg) {
+  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
+  font_scale(buf, c);
+  for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
+    for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
+      int x_iter = (x - start_x);
+      int y_iter = (y - start_y);
+      if (buf[x_iter + y_iter*SCALED_WIDTH]) {
+        gfx_set_pixel(x, y, fg);
+      }
+    }
+  }
+}
+
 
 void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c) {
   for (int x = p1.x; x < p2.x; x++) {
