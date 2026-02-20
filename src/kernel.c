@@ -9,6 +9,7 @@
 #include "gdt.h"
 #include "shell/shell.h"
 #include "intr/idt.h"
+#include "intr/keyboard.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
     limine_base_revision[] = LIMINE_BASE_REVISION(4);

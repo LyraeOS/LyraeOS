@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 void hlt_loop(void);
 size_t kstrlen(const char* str);
@@ -15,4 +16,5 @@ bool strcmp(char *s1, char *s2);
 void wait_ms(uint64_t ms);
 int atoi(const char *s);
 void panic(const char* message);
+void assert(bool c, const char* message);
 #endif

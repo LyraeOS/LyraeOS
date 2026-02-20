@@ -72,3 +72,8 @@ void panic(const char* message) {
   asm volatile ("cli");
   hlt_loop();
 }
+void assert(bool c, const char* message) {
+  if (!c)
+    kprintf("{o}Assertion Failed{r}: {s}\n", 0xFF0000, message);
+    
+}

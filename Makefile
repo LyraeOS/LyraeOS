@@ -52,11 +52,15 @@ override LDFLAGS += \
 	-T linker.lds \
 	-no-pie
 
+override ZIG := zig
+override ZIGFLAGS := build-obj -target x86_64-freestanding -O ReleaseSmall -fno-emit-bin -fno-emit-h
 override SRCFILES := $(shell find -L src -type f 2>/dev/null | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override ASFILES := $(filter %.S,$(SRCFILES))
 override NASMFILES := $(filter %.asm,$(SRCFILES))
 override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
+override ZIGFILES := $(filter %.zig,$(SRCFILES))
+override OBJ += $(addprefix obj/,$(ZIGFILES:.zig=.zig.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
 .PHONY: all
@@ -73,15 +77,17 @@ obj/%.c.o: %.c
 	mkdir -p "$(dir $@)"
 	gcc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Compilation rules for *.S files.
 obj/%.S.o: %.S
 	mkdir -p "$(dir $@)"
 	gcc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Compilation rules for *.asm (nasm) files.
 obj/%.asm.o: %.asm
 	mkdir -p "$(dir $@)"
 	nasm $(NASMFLAGS) $< -o $@
+
+obj/%.zig.o: %.zig
+	mkdir -p "$(dir $@)"
+	$(ZIG) $(ZIGFLAGS) $< -femit-bin=$@
 
 bin/image.hdd: bin/$(OUTPUT)
 	dd if=/dev/zero bs=1M count=0 seek=64 of=bin/image.hdd

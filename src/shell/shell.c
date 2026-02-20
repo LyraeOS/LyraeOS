@@ -90,6 +90,14 @@ void command_handler(char *buf)
         matrix();
         tty_set_cursor_enabled(true);
         tty_clear();
+    } else if (strcmp(argv[0], "zig")) {
+        if (argc < 3) {
+            kprintf("Usage: zig <number 1> <number 2>\n");
+        } else {
+            int32_t retu = zig_add(atoi(argv[1]), atoi(argv[2]));
+            kprintf("zig gave: {d}\n", retu);
+            assert(retu == (atoi(argv[1]) + atoi(argv[2])), "addition failed");
+        }
     }
     else if (!strcmp(argv[0], ""))
     {
