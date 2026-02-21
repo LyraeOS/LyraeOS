@@ -94,7 +94,7 @@ void command_handler(char *buf)
         if (argc < 3) {
             kprintf("Usage: zig <number 1> <number 2>\n");
         } else {
-            int32_t retu = zig_add(atoi(argv[1]), atoi(argv[2]));
+            i32 retu = zig_add(atoi(argv[1]), atoi(argv[2]));
             kprintf("zig gave: {d}\n", retu);
             assert(retu == (atoi(argv[1]) + atoi(argv[2])), "addition failed");
         }

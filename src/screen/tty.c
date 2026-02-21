@@ -1,9 +1,9 @@
 #include "tty.h"
 
 struct TTYCtx tty_ctx = {0};
-size_t tty_max_chars_x;
-size_t tty_max_chars_y;
-static uint32_t custom_color;
+st tty_max_chars_x;
+st tty_max_chars_y;
+static u32 custom_color;
 bool cursor_enabled = true;
 bool init_tty(struct GfxCtx gfx_ctx)
 {
@@ -21,20 +21,20 @@ bool init_tty(struct GfxCtx gfx_ctx)
     gfx_fill_slow(tty_ctx.bg);
     return true;
 }
-void tty_scroll(size_t line)
+void tty_scroll(st line)
 {
     if (line == 0 || (line * SCALED_HEIGHT) >= tty_ctx.height)
         return;
 
     tty_erase_cursor(tty_ctx.col, tty_ctx.row);
-    uint32_t *dest = (uint32_t *)tty_ctx.fb_ptr;
-    uint32_t *src = (uint32_t *)tty_ctx.fb_ptr + ((line * SCALED_HEIGHT) * tty_ctx.width);
-    uint32_t pixelSize = (tty_ctx.height - (line * SCALED_HEIGHT)) * tty_ctx.width;
-    uint32_t byteSize = pixelSize * sizeof(uint32_t);
+    u32 *dest = (u32 *)tty_ctx.fb_ptr;
+    u32 *src = (u32 *)tty_ctx.fb_ptr + ((line * SCALED_HEIGHT) * tty_ctx.width);
+    u32 pixelSize = (tty_ctx.height - (line * SCALED_HEIGHT)) * tty_ctx.width;
+    u32 byteSize = pixelSize * sizeof(u32);
     memmove(dest, src, byteSize);
 
-    size_t y1 = (tty_max_chars_y - 1) * SCALED_HEIGHT;
-    size_t y2 = y1 + SCALED_HEIGHT + SCALE_FACTOR;
+    st y1 = (tty_max_chars_y - 1) * SCALED_HEIGHT;
+    st y2 = y1 + SCALED_HEIGHT + SCALE_FACTOR;
     if (y2 > tty_ctx.height)
         y2 = tty_ctx.height;
 
@@ -82,10 +82,10 @@ void kputchar(char c)
         }
     }
 }
-void kprint(const char *data, size_t length)
+void kprint(const char *data, st length)
 {
     const unsigned char *bytes = (const unsigned char *)data;
-    for (size_t i = 0; i < length; i++)
+    for (st i = 0; i < length; i++)
         kputchar(bytes[i]);
 }
 typedef enum
@@ -124,7 +124,7 @@ int kprintf(const char *restrict format, ...)
             if (cur == 's')
             {
                 const char *str = va_arg(params, const char *);
-                size_t len = kstrlen(str);
+                st len = kstrlen(str);
                 kprint(str, len);
             }
             if (cur == 'c')
@@ -237,7 +237,7 @@ int kprintf(const char *restrict format, ...)
             // temporary code to set color
             if (cur == 'o')
             {
-                custom_color = va_arg(params, uint32_t);
+                custom_color = va_arg(params, u32);
             }
             format++;
         }
@@ -263,9 +263,9 @@ ScreenScale tty_get_screen_size()
     sc.y = tty_ctx.height;
     return sc;
 }
-void tty_set_cursor_pos(size_t x, size_t y)
+void tty_set_cursor_pos(st x, st y)
 {
-    size_t lastx = tty_ctx.col, lasty = tty_ctx.row;
+    st lastx = tty_ctx.col, lasty = tty_ctx.row;
     if (x >= tty_max_chars_x)
         x = tty_max_chars_x - 1;
     if (y >= tty_max_chars_y)
@@ -279,10 +279,10 @@ void tty_set_cursor_pos(size_t x, size_t y)
     tty_erase_cursor(lastx, lasty);
     tty_draw_cursor();
 }
-void tty_erase_cursor(size_t lastx, size_t lasty)
+void tty_erase_cursor(st lastx, st lasty)
 {
-    size_t y1 = lasty * SCALED_HEIGHT + SCALED_HEIGHT;
-    size_t y2 = y1 + SCALE_FACTOR;
+    st y1 = lasty * SCALED_HEIGHT + SCALED_HEIGHT;
+    st y2 = y1 + SCALE_FACTOR;
     if (y1 >= tty_ctx.height)
         return;
     if (y2 > tty_ctx.height)
@@ -298,8 +298,8 @@ void tty_set_cursor_enabled(bool enabled) {
 }
 void tty_draw_cursor()
 {
-    size_t y1 = tty_ctx.row * SCALED_HEIGHT + SCALED_HEIGHT;
-    size_t y2 = y1 + SCALE_FACTOR;
+    st y1 = tty_ctx.row * SCALED_HEIGHT + SCALED_HEIGHT;
+    st y2 = y1 + SCALE_FACTOR;
     if (y1 >= tty_ctx.height)
         return;
     if (y2 > tty_ctx.height)
@@ -310,11 +310,11 @@ void tty_draw_cursor()
             vec2_new(tty_ctx.col * SCALED_WIDTH + SCALED_WIDTH, y2),
             custom_color);
 }
-static uint64_t last_blink = 0;
+static u64 last_blink = 0;
 static bool cursor_visible = false;
 void tty_update_cursor()
 {
-    const uint64_t BLINK_INTERVAL = 500;
+    const u64 BLINK_INTERVAL = 500;
 
     if (timer_ticks - last_blink < BLINK_INTERVAL)
         return;

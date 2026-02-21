@@ -16,7 +16,7 @@ void remap_pic(int offset1, int offset2) {
     outb(PIC1_DATA, 0x00);
     outb(PIC2_DATA, 0xFF);
 }
-void pic_send_eoi(uint8_t irq) {
+void pic_send_eoi(u8 irq) {
     if (irq >= 8) {
         outb(0xA0, 0x20);
     }

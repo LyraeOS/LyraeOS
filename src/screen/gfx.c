@@ -1,6 +1,6 @@
 #include "gfx.h"
 // based on gnu unifonts
-uint8_t glyphs[97][FONT_WIDTH*FONT_HEIGHT] = {
+u8 glyphs[97][FONT_WIDTH*FONT_HEIGHT] = {
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -128,19 +128,19 @@ vec2 vec2_new(int x, int y) {
   return new;
 }
 
-void gfx_fill_slow(uint32_t c) {
-  for (size_t x = 0; x < gfx_ctx.width; x++)
-    for (size_t y = 0; y < gfx_ctx.height; y++)
+void gfx_fill_slow(u32 c) {
+  for (st x = 0; x < gfx_ctx.width; x++)
+    for (st y = 0; y < gfx_ctx.height; y++)
       gfx_ctx.fb_ptr[x + y*gfx_ctx.bytePitch] = c;
 }
-void gfx_set_pixel(size_t x, size_t y, uint32_t c) {
+void gfx_set_pixel(st x, st y, u32 c) {
   gfx_ctx.fb_ptr[x+y*gfx_ctx.bytePitch] = c;
 }
 
-void font_scale(uint8_t *buf, char c) {
+void font_scale(u8 *buf, char c) {
   for (int y = 0; y < FONT_HEIGHT; y++) {
     for (int x = 0; x < FONT_WIDTH; x++) {
-      uint8_t v = glyphs[c-32][x + y * FONT_WIDTH];
+      u8 v = glyphs[c-32][x + y * FONT_WIDTH];
       int scaled_x = x*SCALE_FACTOR;
       int scaled_y = y*SCALE_FACTOR;
       for (int sx = 0; sx < SCALE_FACTOR; sx++)
@@ -150,8 +150,8 @@ void font_scale(uint8_t *buf, char c) {
   }
 }
 
-void gfx_draw_character(char c, int start_x, int start_y, uint32_t fg, uint32_t bg) {
-  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
+void gfx_draw_character(char c, int start_x, int start_y, u32 fg, u32 bg) {
+  u8 buf[SCALED_HEIGHT*SCALED_WIDTH];
   font_scale(buf, c);
   for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
     for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
@@ -161,8 +161,8 @@ void gfx_draw_character(char c, int start_x, int start_y, uint32_t fg, uint32_t 
     }
   }
 }
-void gfx_draw_character_transparent(char c, int start_x, int start_y, uint32_t fg) {
-  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
+void gfx_draw_character_transparent(char c, int start_x, int start_y, u32 fg) {
+  u8 buf[SCALED_HEIGHT*SCALED_WIDTH];
   font_scale(buf, c);
   for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
     for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
@@ -176,7 +176,7 @@ void gfx_draw_character_transparent(char c, int start_x, int start_y, uint32_t f
 }
 
 
-void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c) {
+void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, u32 c) {
   for (int x = p1.x; x < p2.x; x++) {
     for (int y = p1.y; y < p2.y; y++) {
       gfx_ctx.fb_ptr[x + y*gfx_ctx.bytePitch] = c;
@@ -185,7 +185,7 @@ void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c) {
 }
 
 // uses the midpoint circle drawing algorithm
-void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c) {
+void gfx_draw_circle(vec2 center, u32 radius, u32 c) {
   int x = radius, y = 0;
   int p = 1 - radius;
 
@@ -225,7 +225,7 @@ void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c) {
   }
 }
 // Bresenham approach
-void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c) {
+void gfx_draw_line(vec2 p1, vec2 p2, u32 c) {
   int dx = abs(p2.x - p1.x);
   int dy = abs(p2.y - p1.y);
   int sx = p1.x < p2.x ? 1 : -1;
@@ -251,17 +251,17 @@ void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c) {
     }
   }
 }
-void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c) {
+void gfx_draw_rectangle(vec2 p1, vec2 p2, u32 c) {
   gfx_draw_line(vec2_new(p2.x, p1.y), vec2_new(p2.x, p2.y), c);
   gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p2.x, p1.y), c);
   gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p1.x, p2.y), c);
   gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p1.x, p2.y), c);
 }
-void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
+void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, u32 c) {
   gfx_draw_line(p1, p2, c);
   gfx_draw_line(p2, p3, c);
   gfx_draw_line(p3, p1, c);
 }
-uint32_t rgb_to_hex(int r, int g, int b) {   
+u32 rgb_to_hex(int r, int g, int b) {   
     return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
 }

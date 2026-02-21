@@ -1,19 +1,15 @@
 #ifndef UTIL_H
 #define UTIL_H
-
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
-
+#include "intr/idt.h"
+#include "liblyr.h"
 void hlt_loop(void);
-size_t kstrlen(const char* str);
+st kstrlen(const char* str);
 int abs(int value);
-void outb(uint16_t port, uint8_t val);
-uint8_t inb(uint16_t port);
+void outb(u16 port, u8 val);
+u8 inb(u16 port);
 void charcat(char *s, char c);
 bool strcmp(char *s1, char *s2);
-void wait_ms(uint64_t ms);
+void wait_ms(u64 ms);
 int atoi(const char *s);
 void panic(const char* message);
 void assert(bool c, const char* message);

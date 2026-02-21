@@ -1,25 +1,25 @@
 #ifndef GDT_H
 #define GDT_H
-#include <stdint.h>
+#include "liblyr.h"
 
 struct __attribute__((packed)) GDTEntry {
-    uint16_t limit_low;
-    uint16_t base_low;
-    uint8_t  base_mid;
-    uint8_t  access;
-    uint8_t  granularity;
-    uint8_t  base_high;
+    u16 limit_low;
+    u16 base_low;
+    u8  base_mid;
+    u8  access;
+    u8  granularity;
+    u8  base_high;
 };
 
 struct __attribute__((packed)) GDTR {
-    uint16_t limit;
-    uint64_t base;
+    u16 limit;
+    u64 base;
 };
 
 static struct GDTEntry gdt[3];
 struct GDTR gdtr;
 
-static struct GDTEntry gdt_entry(uint8_t access, uint8_t flags) {
+static struct GDTEntry gdt_entry(u8 access, u8 flags) {
     struct GDTEntry e = {0};
     e.access = access;
     e.granularity = flags;
@@ -32,7 +32,7 @@ void gdt_init(void) {
     gdt[2] = gdt_entry(0x92, 0xA0);  // data
 
     gdtr.limit = sizeof(gdt) - 1;
-    gdtr.base = (uint64_t)&gdt;
+    gdtr.base = (u64)&gdt;
 }
 
 extern void gdt_load(void);

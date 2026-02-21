@@ -1,7 +1,7 @@
 #include "util.h"
-#include "intr/idt.h"
-size_t kstrlen(const char* str) {
-    size_t len = 0;
+
+st kstrlen(const char* str) {
+    st len = 0;
     while (str[len]) {
         len++;
     }
@@ -19,19 +19,19 @@ int abs(int value) {
   }
   return value;
 } 
-void outb(uint16_t port, uint8_t val) {
+void outb(u16 port, u8 val) {
     __asm__ volatile ( "outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
 }
-uint8_t inb(uint16_t port) {
-    uint8_t ret;
+u8 inb(u16 port) {
+    u8 ret;
     __asm__ volatile ( "inb %w1, %b0"
                    : "=a"(ret)
                    : "Nd"(port)
                    : "memory");
     return ret;
 }
-void wait_ms(uint64_t ms) {
-  uint64_t end_time = timer_ticks + ms;
+void wait_ms(u64 ms) {
+  u64 end_time = timer_ticks + ms;
   while (timer_ticks < end_time) {
     asm("hlt");
   }
@@ -65,8 +65,8 @@ int atoi(const char *s) {
 void panic(const char* message) {
   gfx_fill_slow(0xFF0000);
   ScreenScale s = tty_get_screen_size();
-  size_t cx = s.x/SCALED_WIDTH;
-  size_t cy = s.y/SCALED_HEIGHT;
+  st cx = s.x/SCALED_WIDTH;
+  st cy = s.y/SCALED_HEIGHT;
   tty_set_cursor_pos((cx/2)-(kstrlen(message)+5), (cy/2)-1);
   kprintf("PANIC: {s}", message);
   asm volatile ("cli");

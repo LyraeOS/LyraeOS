@@ -1,6 +1,7 @@
 #ifndef PIC_H
 #define PIC_H
 #include "util.h"
+#include "liblyr.h"
 #define PIC1_CMD                        0x0020
 #define PIC1_DATA                       0x0021
 #define PIC2_CMD                        0x00a0
@@ -20,5 +21,5 @@
 
 
 void remap_pic(int offset1, int offset2);
-void pic_send_eoi(uint8_t irq);
+void pic_send_eoi(u8 irq);
 #endif

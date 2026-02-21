@@ -8,13 +8,13 @@ void matrix() {
                 return;
         }
         ScreenScale sc = tty_get_screen_size();
-        size_t x_chars = sc.x / SCALED_WIDTH;
-        size_t y_chars = sc.y / SCALED_HEIGHT;
+        st x_chars = sc.x / SCALED_WIDTH;
+        st y_chars = sc.y / SCALED_HEIGHT;
         char characters[] = {'0', '1'};
-        for (size_t x = 0; x < x_chars; x++) {
-            for (size_t y = 0; y < y_chars; y++) {
-                uint64_t v = (uint64_t)x * 0x27d4eb2d;
-                v ^= (uint64_t)y * 0x165667b19e3779f9ULL;
+        for (st x = 0; x < x_chars; x++) {
+            for (st y = 0; y < y_chars; y++) {
+                u64 v = (u64)x * 0x27d4eb2d;
+                v ^= (u64)y * 0x165667b19e3779f9ULL;
                 v ^= timer_ticks;
                 v ^= v >> 33;
                 v *= 0xff51afd7ed558ccdULL;

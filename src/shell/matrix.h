@@ -3,5 +3,6 @@
 
 #include "screen/gfx.h"
 #include "screen/tty.h"
+#include "liblyr.h"
 void matrix();
 #endif

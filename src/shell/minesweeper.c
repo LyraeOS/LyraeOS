@@ -60,8 +60,8 @@ void drawSquare(int x, int y) {
 }
 
 void drawGrid(void) {
-    for (size_t x = 0; x < GRIDX; x++) {
-        for (size_t y = 0; y < GRIDY; y++) {
+    for (st x = 0; x < GRIDX; x++) {
+        for (st y = 0; y < GRIDY; y++) {
             drawSquare(x,y);
         }
     }
@@ -119,8 +119,8 @@ void minesweeperMain(void) {
                 if (numMines <= 0) {
                     break;
                 }
-                uint64_t v = (uint64_t)x * 0x27d4eb2d;
-                v ^= (uint64_t)y * 0x165667b19e3779f9ULL;
+                u64 v = (u64)x * 0x27d4eb2d;
+                v ^= (u64)y * 0x165667b19e3779f9ULL;
                 v ^= timer_ticks;
                 v ^= v >> 33;
                 v *= 0xff51afd7ed558ccdULL;
@@ -160,8 +160,8 @@ void minesweeperMain(void) {
         if (yc >= GRIDY) {
             yc = 0;
         }
-        uint64_t v = (uint64_t)xc * 0x27d4eb2d;
-        v ^= (uint64_t)yc * 0x165667b19e3779f9ULL;
+        u64 v = (u64)xc * 0x27d4eb2d;
+        v ^= (u64)yc * 0x165667b19e3779f9ULL;
         v ^= timer_ticks;
         v ^= v >> 33;
         v *= 0xff51afd7ed558ccdULL;

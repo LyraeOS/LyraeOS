@@ -6,17 +6,17 @@
 #include "util.h"
 #include "intr/idt.h"
 
-static inline size_t cell_index(int x, int y, int grid_y)
+static inline st cell_index(int x, int y, int grid_y)
 {
-    return (size_t)x * (size_t)grid_y + (size_t)y;
+    return (st)x * (st)grid_y + (st)y;
 }
 
-static inline bool bit_get(uint8_t *arr, size_t i)
+static inline bool bit_get(u8 *arr, st i)
 {
     return (arr[i >> 3] >> (i & 7)) & 1;
 }
 
-static inline void bit_set(uint8_t *arr, size_t i, bool v)
+static inline void bit_set(u8 *arr, st i, bool v)
 {
     if (v)
         arr[i >> 3] |= (1u << (i & 7));
@@ -28,30 +28,30 @@ void ConwaysMain(int cell_size)
     ScreenScale screen_scale = tty_get_screen_size();
     int grid_x = screen_scale.x / cell_size;
     int grid_y = screen_scale.y / cell_size;
-    uint8_t grid[(grid_x * grid_y + 7) / 8];
+    u8 grid[(grid_x * grid_y + 7) / 8];
     for (int x = 0; x < grid_x; x++)
     {
         for (int y = 0; y < grid_y; y++)
         {
-            uint64_t v = (uint64_t)x * 0x27d4eb2d;
-            v ^= (uint64_t)y * 0x165667b19e3779f9ULL;
+            u64 v = (u64)x * 0x27d4eb2d;
+            v ^= (u64)y * 0x165667b19e3779f9ULL;
             v ^= timer_ticks;
             v ^= v >> 33;
             v *= 0xff51afd7ed558ccdULL;
             v ^= v >> 33;
 
             bool alive = ((v & 3) == 0);
-            size_t i = cell_index(x, y, grid_y);
+            st i = cell_index(x, y, grid_y);
             bit_set(grid, i, alive);
 
-            uint32_t color = alive ? 0xFF00FF : 0x000000;
+            u32 color = alive ? 0xFF00FF : 0x000000;
             gfx_draw_rectangle_filled(
                 vec2_new(x * cell_size, y * cell_size),
                 vec2_new(x * cell_size + cell_size, y * cell_size + cell_size),
                 color);
         }
     }
-    uint8_t temp[(grid_x * grid_y + 7) / 8];
+    u8 temp[(grid_x * grid_y + 7) / 8];
     while (true)
     {
         if (!keyboard_empty(&keypress_queue))
@@ -76,14 +76,14 @@ void ConwaysMain(int cell_size)
                         int ny = y + yi;
                         if (nx >= 0 && ny >= 0 && nx < grid_x && ny < grid_y)
                         {
-                            size_t ni = cell_index(nx, ny, grid_y);
+                            st ni = cell_index(nx, ny, grid_y);
                             if (bit_get(grid, ni))
                                 amount++;
                         }
                     }
                 }
 
-                size_t i = cell_index(x, y, grid_y);
+                st i = cell_index(x, y, grid_y);
                 bool alive = bit_get(grid, i);
 
                 bool next =
@@ -94,7 +94,7 @@ void ConwaysMain(int cell_size)
 
                 if (alive != next)
                 {
-                    uint32_t color = next ? 0xFFFFFF : (uint32_t) timer_ticks * 20;
+                    u32 color = next ? 0xFFFFFF : (u32) timer_ticks * 20;
                     gfx_draw_rectangle_filled(
                         vec2_new(x * cell_size, y * cell_size),
                         vec2_new(x * cell_size + cell_size, y * cell_size + cell_size),

@@ -30,7 +30,8 @@ override CFLAGS += \
 	-mno-mmx \
 	-mno-red-zone \
 	-mcmodel=kernel \
-	-Werror
+	-Werror \
+	-nostdlib
 
 override CPPFLAGS := \
 	-I src \
@@ -53,7 +54,7 @@ override LDFLAGS += \
 	-no-pie
 
 override ZIG := zig
-override ZIGFLAGS := build-obj -target x86_64-freestanding -O ReleaseSmall -fno-emit-bin -fno-emit-h
+override ZIGFLAGS := build-obj -target x86_64-freestanding -O ReleaseSmall -fno-emit-bin -fno-emit-h -I src
 override SRCFILES := $(shell find -L src -type f 2>/dev/null | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override ASFILES := $(filter %.S,$(SRCFILES))

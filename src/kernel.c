@@ -3,15 +3,12 @@
 #include "mem.h"
 #include "util.h"
 #include "screen/tty.h"
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include "gdt.h"
 #include "shell/shell.h"
 #include "intr/idt.h"
 #include "intr/keyboard.h"
 
-__attribute__((used, section(".limine_requests"))) static volatile uint64_t
+__attribute__((used, section(".limine_requests"))) static volatile u64
     limine_base_revision[] = LIMINE_BASE_REVISION(4);
 __attribute__((
     used,
@@ -25,10 +22,10 @@ __attribute__((
     memmap_request = {.id = LIMINE_MEMMAP_REQUEST_ID, .revision = 0};
 
 __attribute__((used,
-               section(".limine_requests_start"))) static volatile uint64_t
+               section(".limine_requests_start"))) static volatile u64
     limine_requests_start_marker[] = LIMINE_REQUESTS_START_MARKER;
 
-__attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
+__attribute__((used, section(".limine_requests_end"))) static volatile u64
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 extern void fpu_init();
 void kmain(void) {
@@ -52,8 +49,8 @@ void kmain(void) {
         panic("No memory map :(");
     }
     kprintf("[MEM] => Getting largest memory page...\n");
-    uint64_t largest_page_size = 0, index = 0;
-    for (uint64_t i = 0; i < mem_resp->entry_count; i++) {
+    u64 largest_page_size = 0, index = 0;
+    for (u64 i = 0; i < mem_resp->entry_count; i++) {
         struct limine_memmap_entry *entry = mem_resp->entries[i];
         if (entry->length > largest_page_size && entry->type == LIMINE_MEMMAP_USABLE) {
             kprintf("[MEM] => {o}new largest page{r} -> {d} MiB {d} KiB\n", 0x00FF00, entry->length/1024/1024, (entry->length/1024)%1024);

@@ -48,7 +48,7 @@ char keyboard_pop(struct KeyboardQueue *q) {
 KeyboardModifer state = NONE;
 struct KeyboardQueue keypress_queue = {0};
 void keyboard_interrupt_handler() {
-    uint8_t scancode = inb(0x60);
+    u8 scancode = inb(0x60);
     if (scancode & 0x80) {
         if (scancode == 0xAA) {
             state = NONE;

@@ -3,7 +3,7 @@
 #include "util.h"
 #include "screen/tty.h"
 #include "pic.h"
-#include <stdbool.h>
+#include "liblyr.h"
 
 
 typedef enum {
