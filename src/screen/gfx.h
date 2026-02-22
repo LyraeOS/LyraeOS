@@ -1,8 +1,9 @@
 #ifndef GFX_H
 #define GFX_H
 
-#include "limine.h"
-#include "util.h"
+#include "../limine.h"
+#include "../util.h"
+#include "../liblyr.h"
 #include "tty.h"
 
 #define FONT_WIDTH 8

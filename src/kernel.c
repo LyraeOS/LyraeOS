@@ -1,10 +1,9 @@
 #include "screen/gfx.h"
 #include "limine.h"
-#include "mem.h"
 #include "util.h"
 #include "screen/tty.h"
 #include "gdt.h"
-#include "shell/shell.h"
+// #include "shell/shell.h"
 #include "intr/idt.h"
 #include "intr/keyboard.h"
 
@@ -28,6 +27,7 @@ __attribute__((used,
 __attribute__((used, section(".limine_requests_end"))) static volatile u64
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 extern void fpu_init();
+extern void shell_loop();
 void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hlt_loop();

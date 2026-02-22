@@ -169,7 +169,7 @@ void minesweeperMain(void) {
 
         if (v % 3 == 0 && grid[xc][yc] == 0) {
             click(xc,yc);
-            xc = xc, yc = yc;
+            //xc = xc, yc = yc;
             clicked = true;
         }
     }

@@ -1,7 +1,7 @@
 #ifndef TTY_H
 #define TTY_H
 
-#include "util.h"
+#include "../util.h"
 #include "mem.h"
 #include "gfx.h"
 #include "intr/idt.h"

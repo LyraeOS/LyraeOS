@@ -1,7 +1,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#include "screen/tty.h"
+#include "../screen/tty.h"
 #include "mem.h"
 #include "intr/pic.h"
 #include "intr/keyboard.h"
