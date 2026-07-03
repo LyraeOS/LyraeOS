@@ -71,36 +71,55 @@ bin/$(OUTPUT): linker.lds $(OBJ)
 
 obj/%.c.o: %.c
 	mkdir -p "$(dir $@)"
-	gcc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	cc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
 obj/%.S.o: %.S
 	mkdir -p "$(dir $@)"
-	gcc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+	cc $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.asm (nasm) files.
 obj/%.asm.o: %.asm
 	mkdir -p "$(dir $@)"
 	nasm $(NASMFLAGS) $< -o $@
 
-bin/image.hdd: bin/$(OUTPUT)
-	dd if=/dev/zero bs=1M count=0 seek=64 of=bin/image.hdd
-	PATH=$PATH:/usr/sbin:/sbin sgdisk bin/image.hdd -n 1:2048 -t 1:ef00 -m 1
-	./limine/limine bios-install bin/image.hdd
-	mformat -i bin/image.hdd@@1M
-	mmd -i bin/image.hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
-	mcopy -i bin/image.hdd@@1M bin/$(OUTPUT) ::/boot
-	mcopy -i bin/image.hdd@@1M limine.conf limine/limine-bios.sys ::/boot/limine
-	mcopy -i bin/image.hdd@@1M limine/BOOTX64.EFI ::/EFI/BOOT
-	mcopy -i bin/image.hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT
 
-run: bin/image.hdd
-	qemu-system-x86_64 -hda bin/image.hdd -m 2G
+bin/$(OUTPUT).iso: bin/$(OUTPUT)
+	rm -rf bin/iso_root
+	mkdir -p bin/iso_root/boot
+	cp -v bin/LyraeOS bin/iso_root/boot/
+	mkdir -p bin/iso_root/boot/limine
+	cp -v limine.conf bin/iso_root/boot/limine/
+	mkdir -p bin/iso_root/EFI/BOOT
+	cp -v limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin bin/iso_root/boot/limine/
+	cp -v limine/BOOTX64.EFI bin/iso_root/EFI/BOOT/
+	cp -v limine/BOOTIA32.EFI bin/iso_root/EFI/BOOT/
+	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+		-apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
+		-efi-boot-part --efi-boot-image --protective-msdos-label \
+		bin/iso_root -o bin/$(OUTPUT).iso
+	./limine/limine bios-install bin/$(OUTPUT).iso
+
+.PHONY: run-bios
+run-bios: bin/$(OUTPUT).iso
+	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 500M
+.PHONY: run-efi
+run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
+	qemu-system-x86_64 \
+		-M q35 \
+		-drive if=pflash,unit=0,format=raw,file=edk2-ovmf-bins/ovmf-code-x86_64.fd,readonly=on \
+		-cdrom bin/$(OUTPUT).iso \
+		-m 500M
+
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
-usb: bin/image.hdd
-	sudo dd if=bin/image.hdd of=/dev/sdb oflag=direct bs=1M status=progress
+usb: bin/$(OUTPUT).iso
+	sudo dd if=bin/$(OUTPUT).iso of=/dev/sdb oflag=direct bs=1M status=progress
 
 # Remove object files and the final executable.
 .PHONY: clean
 clean:
 	rm -rf bin obj
+
+edk2-ovmf-bins:
+	curl -L https://github.com/osdev0/edk2-ovmf-stable-bins/releases/latest/download/edk2-ovmf-bins.tar.gz | gunzip | tar -xf -
