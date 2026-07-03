@@ -4,3 +4,4 @@ limine/
 LyraeOS.kdev4
 .kdev4/
 edk2-ovmf-bins/
+limine-binary/

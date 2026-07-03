@@ -60,7 +60,7 @@ override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILE
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
 .PHONY: all
-all: bin/$(OUTPUT)
+all: bin/$(OUTPUT).iso
 image: bin/image.hdd
 
 -include $(HEADER_DEPS)
@@ -83,23 +83,22 @@ obj/%.asm.o: %.asm
 	mkdir -p "$(dir $@)"
 	nasm $(NASMFLAGS) $< -o $@
 
-
-bin/$(OUTPUT).iso: bin/$(OUTPUT)
+bin/$(OUTPUT).iso: limine-binary/limine bin/$(OUTPUT)
 	rm -rf bin/iso_root
 	mkdir -p bin/iso_root/boot
-	cp -v bin/LyraeOS bin/iso_root/boot/
+	cp -v bin/$(OUTPUT) bin/iso_root/boot/
 	mkdir -p bin/iso_root/boot/limine
 	cp -v limine.conf bin/iso_root/boot/limine/
 	mkdir -p bin/iso_root/EFI/BOOT
-	cp -v limine/limine-bios.sys limine/limine-bios-cd.bin limine/limine-uefi-cd.bin bin/iso_root/boot/limine/
-	cp -v limine/BOOTX64.EFI bin/iso_root/EFI/BOOT/
-	cp -v limine/BOOTIA32.EFI bin/iso_root/EFI/BOOT/
+	cp -v limine-binary/limine-bios.sys limine-binary/limine-bios-cd.bin limine-binary/limine-uefi-cd.bin bin/iso_root/boot/limine/
+	cp -v limine-binary/BOOTX64.EFI bin/iso_root/EFI/BOOT/
+	cp -v limine-binary/BOOTIA32.EFI bin/iso_root/EFI/BOOT/
 	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
 		-apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		bin/iso_root -o bin/$(OUTPUT).iso
-	./limine/limine bios-install bin/$(OUTPUT).iso
+	./limine-binary/limine bios-install bin/$(OUTPUT).iso
 
 .PHONY: run-bios
 run-bios: bin/$(OUTPUT).iso
@@ -118,7 +117,16 @@ usb: bin/$(OUTPUT).iso
 
 .PHONY: clean
 clean:
-	rm -rf bin obj edk2-ovmf-bins
+	rm -rf bin obj
+
+.PHONY: distclean
+distclean: clean
+	rm -rf edk2-ovmf-bins limine-binary
 
 edk2-ovmf-bins:
 	curl -L https://github.com/osdev0/edk2-ovmf-stable-bins/releases/latest/download/edk2-ovmf-bins.tar.gz | gunzip | tar -xf -
+
+limine-binary/limine:
+	rm -rf limine-binary
+	curl -L https://github.com/Limine-Bootloader/Limine/releases/latest/download/limine-binary.tar.gz | gunzip | tar -xf -
+	$(MAKE) -C limine-binary
