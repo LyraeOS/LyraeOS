@@ -15,4 +15,5 @@ bool strcmp(char *s1, char *s2);
 void wait_ms(uint64_t ms);
 int atoi(const char *s);
 void panic(const char* message);
+void assert(bool condition, const char* message);
 #endif

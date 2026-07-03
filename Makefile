@@ -95,7 +95,7 @@ bin/image.hdd: bin/$(OUTPUT)
 	mcopy -i bin/image.hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT
 
 run: bin/image.hdd
-	qemu-system-x86_64 -hda bin/image.hdd -accel kvm -m 2G
+	qemu-system-x86_64 -hda bin/image.hdd -m 2G
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/image.hdd
 	sudo dd if=bin/image.hdd of=/dev/sdb oflag=direct bs=1M status=progress

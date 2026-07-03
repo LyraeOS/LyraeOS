@@ -10,7 +10,7 @@
 
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 16
-#define SCALE_FACTOR 1
+#define SCALE_FACTOR 2
 #define SCALED_WIDTH (FONT_WIDTH*SCALE_FACTOR)
 #define SCALED_HEIGHT (FONT_HEIGHT*SCALE_FACTOR)
 
@@ -25,7 +25,9 @@ typedef struct {
   int x;
   int y;
 } vec2;
+
 vec2 vec2_new(int x, int y);
+
 bool init_gfx(struct limine_framebuffer_request rq);
 void gfx_fill_slow(uint32_t c);
 void gfx_draw_character(char c, int x, int y, uint32_t fg, uint32_t bg);
@@ -38,5 +40,6 @@ void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c);
 void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c);
-uint32_t rgb_to_hex(int r, int g, int b);
+
+#define RGB(R,G,B) ((((R) & 0xff) << 16) | (((G) & 0xff) << 8) | ((B) & 0xff))
 #endif

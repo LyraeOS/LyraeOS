@@ -15,10 +15,9 @@ bool init_tty(struct GfxCtx gfx_ctx)
     tty_ctx.col = 0;
     tty_max_chars_x = tty_ctx.width / SCALED_WIDTH;
     tty_max_chars_y = tty_ctx.height / SCALED_HEIGHT;
-    tty_ctx.bg = 0x000000;
-    tty_ctx.fg = 0xffffff;
-    custom_color = tty_ctx.fg;
-    gfx_fill_slow(tty_ctx.bg);
+    tty_ctx.theme = LYRAE_DARK;
+    custom_color = tty_ctx.theme.fg;
+    gfx_fill_slow(tty_ctx.theme.bg);
     return true;
 }
 void tty_scroll(size_t line)
@@ -41,7 +40,7 @@ void tty_scroll(size_t line)
     gfx_draw_rectangle_filled(
         vec2_new(0, y1),
         vec2_new(tty_ctx.width, y2),
-        tty_ctx.bg);
+        tty_ctx.theme.bg);
 
     if (tty_ctx.row >= line)
         tty_set_cursor_pos(0, tty_ctx.row - line);
@@ -57,7 +56,7 @@ void kputchar(char c)
     {
         tty_erase_cursor(tty_ctx.col, tty_ctx.row);
         tty_ctx.col = 0;
-        if (tty_ctx.row >= (tty_max_chars_y))
+        if (tty_ctx.row > tty_max_chars_y - 2)
         {
             tty_scroll(1);
         }
@@ -67,12 +66,12 @@ void kputchar(char c)
         }
         return;
     }
-    gfx_draw_character(c, tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.bg);
+    gfx_draw_character(c, tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.theme.bg);
     tty_set_cursor_pos(tty_ctx.col + 1, tty_ctx.row);
     if (tty_ctx.col >= tty_max_chars_x - 1)
     {
         tty_ctx.col = 0;
-        if (tty_ctx.row > tty_max_chars_y)
+        if (tty_ctx.row > tty_max_chars_y - 2)
         {
             tty_scroll(1);
         }
@@ -232,7 +231,7 @@ int kprintf(const char *restrict format, ...)
             // temporary code to reset color
             if (cur == 'r')
             {
-                custom_color = tty_ctx.fg;
+                custom_color = tty_ctx.theme.fg;
             }
             // temporary code to set color
             if (cur == 'o')
@@ -246,7 +245,7 @@ int kprintf(const char *restrict format, ...)
 }
 void tty_clear()
 {
-    gfx_fill_slow(tty_ctx.bg);
+    gfx_fill_slow(tty_ctx.theme.bg);
     tty_set_cursor_pos(0, 0);
 }
 void tty_backspace()
@@ -254,7 +253,7 @@ void tty_backspace()
     if (tty_ctx.col < 1)
         return;
     tty_set_cursor_pos(tty_ctx.col - 1, tty_ctx.row);
-    gfx_draw_character(' ', tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.bg);
+    gfx_draw_character(' ', tty_ctx.col * SCALED_WIDTH, tty_ctx.row * SCALED_HEIGHT, custom_color, tty_ctx.theme.bg);
 }
 ScreenScale tty_get_screen_size()
 {
@@ -291,7 +290,7 @@ void tty_erase_cursor(size_t lastx, size_t lasty)
         gfx_draw_rectangle_filled(
             vec2_new(lastx * SCALED_WIDTH, y1),
             vec2_new(lastx * SCALED_WIDTH + SCALED_WIDTH, y2),
-            tty_ctx.bg);
+            tty_ctx.theme.bg);
 }
 void tty_set_cursor_enabled(bool enabled) {
     cursor_enabled = enabled;
@@ -308,7 +307,7 @@ void tty_draw_cursor()
         gfx_draw_rectangle_filled(
             vec2_new(tty_ctx.col * SCALED_WIDTH, y1),
             vec2_new(tty_ctx.col * SCALED_WIDTH + SCALED_WIDTH, y2),
-            custom_color);
+            tty_ctx.theme.cursor);
 }
 static uint64_t last_blink = 0;
 static bool cursor_visible = false;
@@ -331,4 +330,11 @@ void tty_update_cursor()
         tty_draw_cursor();
         cursor_visible = true;
     }
+}
+
+void tty_change_theme(TTYTheme theme) {
+    tty_ctx.theme = theme;
+}
+TTYTheme* tty_cur_theme() {
+  return &tty_ctx.theme;
 }
