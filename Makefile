@@ -116,10 +116,9 @@ run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
 usb: bin/$(OUTPUT).iso
 	sudo dd if=bin/$(OUTPUT).iso of=/dev/sdb oflag=direct bs=1M status=progress
 
-# Remove object files and the final executable.
 .PHONY: clean
 clean:
-	rm -rf bin obj
+	rm -rf bin obj edk2-ovmf-bins
 
 edk2-ovmf-bins:
 	curl -L https://github.com/osdev0/edk2-ovmf-stable-bins/releases/latest/download/edk2-ovmf-bins.tar.gz | gunzip | tar -xf -
