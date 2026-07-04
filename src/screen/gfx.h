@@ -10,15 +10,18 @@
 
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 16
-#define SCALE_FACTOR 1
-#define SCALED_WIDTH (FONT_WIDTH*SCALE_FACTOR)
-#define SCALED_HEIGHT (FONT_HEIGHT*SCALE_FACTOR)
+
+typedef struct {
+  int factor;
+  int width, height;
+} ScalingInfo;
 
 struct GfxCtx {
   uint64_t width, height, bytePitch;
   volatile uint32_t *fb_ptr;
   struct limine_framebuffer *framebuffer;
   uint32_t bg_color, fg_color;
+  ScalingInfo scaling_info;
 };
 
 typedef struct {
@@ -40,6 +43,9 @@ void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c);
 void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c);
+
+void gfx_update_scale(int scale_factor);
+ScalingInfo gfx_get_scaling_info();
 
 #define RGB(R,G,B) ((((R) & 0xff) << 16) | (((G) & 0xff) << 8) | ((B) & 0xff))
 #endif

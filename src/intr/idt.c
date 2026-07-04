@@ -298,43 +298,157 @@ void timer_interrupt(uint64_t irq_n) {
     
     pic_send_eoi(irq_n);
 }
-static const char* const exceptions[] = {
-    "Divide by zero error",
-    "Debug",
-    "Non-maskable Interrupt",
+
+typedef enum {
+  PANIC_DIVISION_ERROR = 0,
+  PANIC_BREAKPOINT = 3,
+  PANIC_OVERFLOW,
+  PANIC_BOUND_RANGE_EXCEEDED,
+  PANIC_INVALID_OPCODE,
+  PANIC_DEVICE_NOT_AVAILABLE,
+  PANIC_DOUBLE_FAULT = 8,
+  PANIC_INVALID_TSS = 10,
+  PANIC_SEGMENT_NOT_PRESENT,
+  PANIC_STACK_SEGMENT_FAULT,
+  PANIC_GENERAL_PROTECTION_FAULT,
+  PANIC_PAGE_FAULT = 14,
+  PANIC_X87_FLOATING_POINT_EXCEPTION = 16,
+  PANIC_ALIGNMENT_CHECK = 17,
+  PANIC_SIMD_FLOATING_POINT_EXCEPTION = 19,
+  PANIC_VIRTUALIZATION_EXCEPTION,
+  PANIC_CONTROL_PROTECTION_EXCEPTION = 21,
+  PANIC_HYPERVISOR_INJECTION_EXCEPTION = 28,
+  PANIC_VMM_COMMUNICATION_EXCEPTION,
+  PANIC_SECURITY_EXCEPTION
+} PanicReason;
+
+typedef struct {
+  const char *name;
+  const char *desc;
+} PanicInfo;
+
+static const PanicInfo panic_info[] = {
+  [PANIC_DIVISION_ERROR] = {
+    "Division Error",
+    "Division by zero, or result is too large"
+  },
+  [PANIC_BREAKPOINT] = {
     "Breakpoint",
+    "A breakpoint was triggered"
+  },
+  [PANIC_OVERFLOW] = {
     "Overflow",
+    "INTO instruction is executed while the overflow bit in RFLAGS is set to 1. "
+  },
+  [PANIC_BOUND_RANGE_EXCEEDED] = {
     "Bound Range Exceeded",
+    "The BOUND instruction was executed and the index was out of bounds."
+  },
+  [PANIC_INVALID_OPCODE] = {
     "Invalid Opcode",
+    "The CPU encountered an invalid opcode"
+  },
+  [PANIC_DEVICE_NOT_AVAILABLE] = {
     "Device Not Available",
+    "FPU instruction was attempted when no FPU available."
+  },
+  [PANIC_DOUBLE_FAULT] = {
     "Double Fault",
-    "Coprocessor Segment Overrun",
+    "An exception occured while trying to handle an exception"
+  },
+  [PANIC_INVALID_TSS] = {
     "Invalid TSS",
+    "An invalid segment selector was referenced as part of a task switch"
+  },
+  [PANIC_SEGMENT_NOT_PRESENT] = {
     "Segment Not Present",
-    "Stack-Segment Fault",
+    "The CPU was trying to load a segment or gate with the 'Present' bit set to 0. However, the descriptor was not present."
+  },
+  [PANIC_STACK_SEGMENT_FAULT] = {
+    "Stack Segment Fault",
+    "There are several reasons that could cause this, they are: \nLoading a stack-segment referencing a segment descriptor which is not present.\nAny PUSH or POP instruction or any instruction using ESP or EBP as a base register is executed, while the stack address is not in canonical form.\nWhen the stack-limit check fails."
+  },
+  [PANIC_GENERAL_PROTECTION_FAULT] = {
     "General Protection Fault",
+    "Many reasons that include:\nSegment error (privilege, type, limit, read/write rights).\nExecuting a privileged instruction while CPL != 0.\nWriting a 1 in a reserved register field or writing invalid value combinations (e.g. CR0 with PE=0 and PG=1).\nReferencing or accessing a null-descriptor.\nAccessing a memory address with bits 48-63 not matching bit 47 (e.g. 0x_0000_8000_0000_0000 instead of 0x_ffff_8000_0000_0000) in 64 bit mode.\nExecuting an instruction that requires memory operands to be aligned (e.g. movaps) without the proper alignment."
+  },
+  [PANIC_PAGE_FAULT] = {
     "Page Fault",
-    "",
-    "x87 Floating-Point Exception",
+    "" // determine based on error code
+  },
+  [PANIC_X87_FLOATING_POINT_EXCEPTION] = {
+    "X87 Floating Point Exception",
+    "CR0.NE is 1 and an unmasked x87 floating point exception is pending."
+  },
+  [PANIC_ALIGNMENT_CHECK] = {
     "Alignment Check",
-    "Machine Check",
-    "SIMD Floating-Point Exception",
+    "Unaligned memory data reference"
+  },
+  [PANIC_SIMD_FLOATING_POINT_EXCEPTION] = {
+    "SIMD Floating Point Exception",
+    "An unmasked 128-bit media floating-point exception occured and the CR4.OSXMMEXCPT bit was set to 1."
+  },
+  [PANIC_VIRTUALIZATION_EXCEPTION] = {
     "Virtualization Exception",
-    "Control Protection Exception ",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
+    "?????"
+  },
+  [PANIC_CONTROL_PROTECTION_EXCEPTION] = {
+    "Control Protection Exception",
+    "?????"
+  },
+  [PANIC_HYPERVISOR_INJECTION_EXCEPTION] = {
     "Hypervisor Injection Exception",
+    "?????"
+  },
+  [PANIC_VMM_COMMUNICATION_EXCEPTION] = {
     "VMM Communication Exception",
+    "?????"
+  },
+  [PANIC_SECURITY_EXCEPTION] = {
     "Security Exception",
-    ""
+    "?????"
+  }
 };
-void isr_handler(uint64_t exception_num) {
-    tty_clear();
-    gfx_fill_slow(0xFF0000);
-    kprintf("\n{o}Exception:{r} {d}, {s}\n", 0x00FF00 ,exception_num, exceptions[exception_num]);
+void isr_handler(registers_t *regs) {
+    tty_change_theme(LYRAE_PANIC);
+    tty_set_cursor_enabled(false);
+    PanicReason r = regs->int_no;
+    PanicInfo info = panic_info[r];
+
+    uint64_t cr2;
+    __asm__ volatile ("mov %%cr2, %0" : "=r"(cr2));
+
+
+    kprintf("LyraeOS Kernel Panic :(\n");
+    kprintf("Reason: {s}\n", info.name);
+    if (r == PANIC_PAGE_FAULT) {
+	size_t error = regs->err;
+	kprintf("Address: {X}, Error code: {X}\nError code info:\n", cr2, error);
+	kprintf("P   : {c}\n", (error & (1 << 0)) ? 'Y' : 'N');
+	kprintf("W   : {c}\n", (error & (1 << 1)) ? 'Y' : 'N');
+	kprintf("U   : {c}\n", (error & (1 << 2)) ? 'Y' : 'N');
+	kprintf("R   : {c}\n", (error & (1 << 3)) ? 'Y' : 'N');
+	kprintf("I   : {c}\n", (error & (1 << 4)) ? 'Y' : 'N');
+	kprintf("PK  : {c}\n", (error & (1 << 5)) ? 'Y' : 'N');
+	kprintf("SS  : {c}\n", (error & (1 << 6)) ? 'Y' : 'N');
+	kprintf("SGX : {c}\n", (error & (1 << 15)) ? 'Y' : 'N');
+    } else {
+	kprintf("Description:\n    ");
+	kprintf("{s}\n", info.desc);
+    }
+    kprintf("\nRIP: {X}  RSP:    {X}\n", regs->rip, regs->rsp);
+    kprintf("RBP: {X}  RFLAGS: {X}\n", regs->rbp, regs->rflags);
+
+    kprintf("\nRAX: {X}  RBX: {X}\n", regs->rax, regs->rbx);
+    kprintf("RCX: {X}  RDX: {X}\n", regs->rcx, regs->rdx);
+    kprintf("RSI: {X}  RDI: {X}\n", regs->rsi, regs->rdi);
+
+    kprintf("\nR8 : {X}  R9 : {X}\n", regs->r8, regs->r9);
+    kprintf("R10: {X}  R11: {X}\n", regs->r10, regs->r11);
+    kprintf("R12: {X}  R13: {X}\n", regs->r12, regs->r13);
+
+    kprintf("Summary: {s} while executing {X}\n\n",
+	    info.name,
+	    regs->rip);
     hlt_loop();
 }

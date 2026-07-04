@@ -24,17 +24,23 @@ struct __attribute__((packed, aligned(16))) idt_ptr {
     uint64_t base;
 };
 typedef struct {
-    // Segment registers (if you save them)
-    uint64_t ds;
-    
-    // General purpose registers pushed by pusha equivalent (push order)
-    uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
-    uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
-    
-    // Interrupt/exception number and error code
-    uint64_t int_no, err_code;
-    
-    // Pushed by CPU automatically during interrupt
+    uint64_t r15;
+    uint64_t r14;
+    uint64_t r13;
+    uint64_t r12;
+    uint64_t r11;
+    uint64_t r10;
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t rbp;
+    uint64_t rdx;
+    uint64_t rcx;
+    uint64_t rbx;
+    uint64_t rax;
+    uint64_t int_no;
+    uint64_t err;
     uint64_t rip;
     uint64_t cs;
     uint64_t rflags;
@@ -51,5 +57,5 @@ void init_pit(uint32_t frequency);
 void idt_install();
 extern volatile uint64_t timer_ticks;
 void timer_interrupt(uint64_t irq_n);
-void isr_handler(uint64_t exception_num);
+void isr_handler(registers_t *regs);
 #endif

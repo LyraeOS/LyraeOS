@@ -14,6 +14,7 @@ typedef struct {
     uint32_t error, warning, success, info;
     uint32_t accent;
 } TTYTheme;
+
 static const TTYTheme LYRAE_LIGHT = {
     .fg      = 0x2b2d42, 
     .bg      = 0xf7f9fc, 
@@ -37,6 +38,20 @@ static const TTYTheme LYRAE_DARK = {
     .info    = 0x60a5fa,
     .accent  = 0xa78bfa,
 };
+
+static const TTYTheme LYRAE_PANIC = {
+    .fg      = 0xffdede,
+    .bg      = 0x190609,
+    .cursor  = 0xff6666,
+
+    .error   = 0xff6666,
+    .warning = 0xffb347,
+    .success  = 0x90ee90,
+    .info    = 0x87cefa,
+
+    .accent  = 0xff4444,
+};
+
 struct TTYCtx {
     uint64_t width, height, bytePitch;
     volatile uint32_t *fb_ptr;
@@ -45,7 +60,7 @@ struct TTYCtx {
 };
 typedef struct {
     uint64_t x, y;
-} ScreenScale;
+} ScreenSize;
 struct GfxCtx;
 bool init_tty(struct GfxCtx gfx_ctx);
 void kputchar(char c);
@@ -53,7 +68,7 @@ void tty_scroll(size_t line);
 int kprintf(const char* restrict format, ...);
 void tty_clear();
 void tty_backspace();
-ScreenScale tty_get_screen_size();
+ScreenSize tty_get_screen_size();
 void tty_set_cursor_pos(size_t x, size_t y);
 void tty_draw_cursor();
 void tty_erase_cursor(size_t lastx, size_t lasty);

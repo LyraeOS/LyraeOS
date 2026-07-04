@@ -25,7 +25,7 @@ static inline void bit_set(uint8_t *arr, size_t i, bool v)
 }
 void ConwaysMain(int cell_size)
 {
-    ScreenScale screen_scale = tty_get_screen_size();
+    ScreenSize screen_scale = tty_get_screen_size();
     int grid_x = screen_scale.x / cell_size;
     int grid_y = screen_scale.y / cell_size;
     uint8_t grid[(grid_x * grid_y + 7) / 8];

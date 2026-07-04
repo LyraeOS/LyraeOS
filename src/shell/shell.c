@@ -49,7 +49,7 @@ void command_handler(char *buf) {
     } else if (strcmp(argv[0], "clear")) {
         tty_clear();
     } else if (strcmp(argv[0], "panic")) {
-        panic("shell");
+	*(volatile int *)0xDEADBEEF = 1;
     } else if (strcmp(argv[0], "echo")) {
         for (int i = 1; i < argc; i++) {
             kprintf("{s} ", argv[i]);
@@ -62,7 +62,7 @@ void command_handler(char *buf) {
             int size = atoi(argv[1]);
             if (size < 0)
                 size = 0;
-            ScreenScale sc = tty_get_screen_size();
+            ScreenSize sc = tty_get_screen_size();
             sierpinski(vec2_new(sc.x - 1, sc.y - 1), vec2_new((sc.x - 1) / 2, 1), vec2_new(1, sc.y - 1), size);
         }
     } else if (strcmp(argv[0], "matrix")) {
@@ -76,8 +76,17 @@ void command_handler(char *buf) {
         } else {
             if (strcmp(argv[1], "light")) tty_change_theme(LYRAE_LIGHT); 
             if (strcmp(argv[1], "dark")) tty_change_theme(LYRAE_DARK); 
-            tty_clear();
         }
+    } else if (strcmp(argv[0], "scale")) {
+      if (argc < 2) {
+	kprintf("Usage:\nscale [scale factor as int]\n");
+      } else {
+            int size = atoi(argv[1]);
+            if (size < 1)
+                size = 1;
+	    
+	    gfx_update_scale(size);
+      }
     } else if (!strcmp(argv[0], "")) {
       kprintf("{o}Unknown command: {s}{r}\n", tty_cur_theme()->error, argv[0]);
     }

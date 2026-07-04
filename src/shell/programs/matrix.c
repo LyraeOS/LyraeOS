@@ -8,10 +8,11 @@ void matrix() {
             if (keyboard_pop(&keypress_queue) == 'q')
                 return;
         }
-        ScreenScale sc = tty_get_screen_size();
-        size_t x_chars = sc.x / SCALED_WIDTH;
-        size_t y_chars = sc.y / SCALED_HEIGHT;
-        char characters[] = {'0', '1', '\x7'};
+        ScreenSize sc = tty_get_screen_size();
+        ScalingInfo si = gfx_get_scaling_info();
+        size_t x_chars = sc.x / si.width;
+        size_t y_chars = sc.y / si.height;
+        char characters[] = {'0', '1'};
         for (size_t x = 0; x < x_chars; x++) {
             for (size_t y = 0; y < y_chars; y++) {
                 uint64_t v = (uint64_t)x * 0x27d4eb2d;
@@ -22,9 +23,9 @@ void matrix() {
                 v ^= v >> 33;
 		
                 if (v % 5 == 0) {
-                    gfx_draw_character(characters[v % 2], x*SCALED_WIDTH, y*SCALED_HEIGHT, cur->accent, cur->bg);
+                    gfx_draw_character(characters[v % 2], x*si.width, y*si.height, cur->accent, cur->bg);
                 } else {
-                    gfx_draw_character(characters[v % 2], x*SCALED_WIDTH, y*SCALED_HEIGHT, cur->bg, cur->bg);
+                    gfx_draw_character(characters[v % 2], x*si.width, y*si.height, cur->bg, cur->bg);
                 }
                 
             }

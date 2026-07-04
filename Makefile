@@ -18,6 +18,7 @@ override CFLAGS += \
 	-std=gnu11 \
 	-ffreestanding \
 	-fno-stack-protector \
+	-fno-omit-frame-pointer \
 	-fno-stack-check \
 	-fno-lto \
 	-fno-PIC \
@@ -102,14 +103,15 @@ bin/$(OUTPUT).iso: limine-binary/limine bin/$(OUTPUT)
 
 .PHONY: run-bios
 run-bios: bin/$(OUTPUT).iso
-	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 500M
+	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 500M -serial stdio
 .PHONY: run-efi
 run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
 	qemu-system-x86_64 \
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=edk2-ovmf-bins/ovmf-code-x86_64.fd,readonly=on \
 		-cdrom bin/$(OUTPUT).iso \
-		-m 500M
+		-m 500M \
+		-serial stdio
 
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/$(OUTPUT).iso

@@ -117,15 +117,17 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_ctx.width = fb->width;
     gfx_ctx.fb_ptr = fb->address;
     gfx_ctx.framebuffer = fb;
+    gfx_update_scale(1);
+
     init_tty(gfx_ctx);
     return true;
 }
 
 vec2 vec2_new(int x, int y) {
-  vec2 new;
-  new.x = x;
-  new.y = y;
-  return new;
+  return (vec2) {
+    .x = x,
+    .y = y
+  };
 }
 
 void gfx_fill_slow(uint32_t c) {
@@ -138,37 +140,43 @@ void gfx_set_pixel(size_t x, size_t y, uint32_t c) {
 }
 
 void font_scale(uint8_t *buf, char c) {
+  int factor = gfx_ctx.scaling_info.factor;
+  int width = gfx_ctx.scaling_info.width;
   for (int y = 0; y < FONT_HEIGHT; y++) {
     for (int x = 0; x < FONT_WIDTH; x++) {
       uint8_t v = glyphs[c-32][x + y * FONT_WIDTH];
-      int scaled_x = x*SCALE_FACTOR;
-      int scaled_y = y*SCALE_FACTOR;
-      for (int sx = 0; sx < SCALE_FACTOR; sx++)
-        for (int sy = 0; sy < SCALE_FACTOR; sy++)
-          buf[(scaled_y + sy) * SCALED_WIDTH + (scaled_x + sx)] = v;
+      int scaled_x = x * factor;
+      int scaled_y = y * factor;
+      for (int sx = 0; sx < factor; sx++)
+        for (int sy = 0; sy < factor; sy++)
+          buf[(scaled_y + sy) * width + (scaled_x + sx)] = v;
     }
   }
 }
 
 void gfx_draw_character(char c, int start_x, int start_y, uint32_t fg, uint32_t bg) {
-  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
+  int width = gfx_ctx.scaling_info.width;
+  int height = gfx_ctx.scaling_info.height;
+  uint8_t buf[height*width];
   font_scale(buf, c);
-  for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
-    for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
+  for (int x = start_x; x < start_x + width; x++) {
+    for (int y = start_y; y < start_y + height; y++) {
       int x_iter = (x - start_x);
       int y_iter = (y - start_y);
-      gfx_set_pixel(x, y, buf[x_iter + y_iter*SCALED_WIDTH] ? fg : bg);
+      gfx_set_pixel(x, y, buf[x_iter + y_iter*width] ? fg : bg);
     }
   }
 }
 void gfx_draw_character_transparent(char c, int start_x, int start_y, uint32_t fg) {
-  uint8_t buf[SCALED_HEIGHT*SCALED_WIDTH];
+  int width = gfx_ctx.scaling_info.width;
+  int height = gfx_ctx.scaling_info.height;
+  uint8_t buf[height*width];
   font_scale(buf, c);
-  for (int x = start_x; x < start_x + SCALED_WIDTH; x++) {
-    for (int y = start_y; y < start_y + SCALED_HEIGHT; y++) {
+  for (int x = start_x; x < start_x + width; x++) {
+    for (int y = start_y; y < start_y + height; y++) {
       int x_iter = (x - start_x);
       int y_iter = (y - start_y);
-      if (buf[x_iter + y_iter*SCALED_WIDTH]) {
+      if (buf[x_iter + y_iter*width]) {
         gfx_set_pixel(x, y, fg);
       }
     }
@@ -196,7 +204,7 @@ void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c) {
       gfx_set_pixel(y + center.x, x + center.y, c);
       gfx_set_pixel(-y + center.x, x + center.y, c);
   }
-  
+
   while (x > y) {
     y++;
     // Mid-point is inside or on the perimeter
@@ -210,7 +218,7 @@ void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c) {
 
     if (x < y)
       break;
-      
+
     gfx_set_pixel(x + center.x, y + center.y, c);
     gfx_set_pixel(-x + center.x, y + center.y, c);
     gfx_set_pixel(x + center.x, -y + center.y, c);
@@ -231,7 +239,7 @@ void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c) {
   int sx = p1.x < p2.x ? 1 : -1;
   int sy = p1.y < p2.y ? 1 : -1;
   int err = dx - dy;
-  int x1 = p1.x, x2 = p2.x, y1 = p1.y, y2=p2.y; 
+  int x1 = p1.x, x2 = p2.x, y1 = p1.y, y2=p2.y;
   while (1) {
 
     gfx_set_pixel(x1, y1, c);
@@ -261,4 +269,15 @@ void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
   gfx_draw_line(p1, p2, c);
   gfx_draw_line(p2, p3, c);
   gfx_draw_line(p3, p1, c);
+}
+
+
+void gfx_update_scale(int scale_factor) {
+  gfx_ctx.scaling_info.factor = scale_factor;
+  gfx_ctx.scaling_info.width = FONT_WIDTH * scale_factor;
+  gfx_ctx.scaling_info.height = FONT_HEIGHT * scale_factor;
+  tty_clear();
+}
+ScalingInfo gfx_get_scaling_info() {
+  return gfx_ctx.scaling_info;
 }

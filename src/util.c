@@ -62,9 +62,10 @@ int atoi(const char *s) {
   }
   return num;
 }
+
 void panic(const char* message) {
   tty_set_cursor_enabled(false);
-  tty_clear();
+  tty_change_theme(LYRAE_PANIC);
   kprintf("{o}KERNEL PANIC\nReason: {s}{r}", tty_cur_theme()->error, message);
   asm volatile ("cli");
   hlt_loop();
