@@ -1,7 +1,7 @@
 #ifndef MINE_H
 #define MINE_H
 #include <stdbool.h>
-#include "mem.h"
+#include "../../memory/mem.h"
 #include "screen/gfx.h"
 #include "util.h"
 #include "intr/idt.h"

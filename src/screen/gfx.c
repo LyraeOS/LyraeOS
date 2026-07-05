@@ -281,3 +281,6 @@ void gfx_update_scale(int scale_factor) {
 ScalingInfo gfx_get_scaling_info() {
   return gfx_ctx.scaling_info;
 }
+struct limine_framebuffer* gfx_get_fb() {
+  return gfx_ctx.framebuffer;
+}

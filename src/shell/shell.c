@@ -94,7 +94,6 @@ void command_handler(char *buf) {
 void shell_loop()
 {
     TTYTheme* cur_theme = tty_cur_theme();
-    tty_clear();
     keyboard_pop(&keypress_queue);
     kprintf("Welcome to {o}LyraeOS{r}!\n", cur_theme->accent);
     kprintf("{o}kernel@lyraeos{r} $ ", cur_theme->accent);

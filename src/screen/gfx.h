@@ -47,5 +47,7 @@ void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c);
 void gfx_update_scale(int scale_factor);
 ScalingInfo gfx_get_scaling_info();
 
+struct limine_framebuffer* gfx_get_fb();
+
 #define RGB(R,G,B) ((((R) & 0xff) << 16) | (((G) & 0xff) << 8) | ((B) & 0xff))
 #endif

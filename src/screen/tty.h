@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include "util.h"
-#include "mem.h"
+#include "../memory/mem.h"
 #include "gfx.h"
 #include "intr/idt.h"
 

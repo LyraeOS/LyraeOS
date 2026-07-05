@@ -165,27 +165,46 @@ int kprintf(const char *restrict format, ...) {
                 buf[i] = '\0';
                 kprint((const char *) buf, kstrlen(buf));
             }
-	    if (cur == 'X') {
-		size_t num = va_arg(params,size_t);
-		static const char nums[] = "0123456789ABCDEF";
-		char buf[17];
-		for (size_t i = 0; i < sizeof(num)*2; i++) {
-		    buf[i] = nums[(num >> ((15 - i) * 4)) & 0xF];
-		}
+	        if (cur == 'X') {
+		        size_t num = va_arg(params,size_t);
+		        static const char nums[] = "0123456789ABCDEF";
+		        char buf[17];
+		        for (size_t i = 0; i < sizeof(num)*2; i++) {
+		            buf[i] = nums[(num >> ((15 - i) * 4)) & 0xF];
+		        }
 
-		buf[16] = '\0';
-		kprint("0x", 2);
-		kprint(buf, 16);
-	    }
-	    if (cur == 'b') {
-		size_t num = va_arg(params,size_t);
-		char buf[65];
-		for (int i = 63; i >= 0; i--) {
-		  buf[63 - i] = num & (1ULL << i) ? '1' : '0';
-		}
-		buf[64] = '\0';
-		kprint(buf, 65);
-	    }
+		        buf[16] = '\0';
+		        kprint("0x", 2);
+		        kprint(buf, 16);
+	            }
+	            if (cur == 'b') {
+		        size_t num = va_arg(params,size_t);
+		        char buf[65];
+		        for (int i = 63; i >= 0; i--) {
+		          buf[63 - i] = num & (1ULL << i) ? '1' : '0';
+		        }
+		        buf[64] = '\0';
+		        kprint(buf, 65);
+	        }
+            if (cur == 'u') {
+                size_t num = va_arg(params, size_t);
+                char buf[17];
+                int i = 0;
+                if (num == 0) {
+                    buf[i++] = '0';
+                }
+                while (num > 0) {
+                    buf[i++] = num % 10ULL + (size_t)'0';
+                    num /= 10ULL;
+                }
+                for (int j = 0, k = i - 1; j < k; j++, k--) {
+                    char temp = buf[j];
+                    buf[j] = buf[k];
+                    buf[k] = temp;
+                }
+                buf[i] = '\0';
+                kprint((const char *) buf, kstrlen(buf));
+            }
             if (cur == 'f') {
                 double num = va_arg(params, double);
                 char buf[32];

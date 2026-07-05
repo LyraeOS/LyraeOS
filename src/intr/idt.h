@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "screen/tty.h"
-#include "mem.h"
+#include "../memory/mem.h"
 #include "intr/pic.h"
 #include "intr/keyboard.h"
 #include "isr_gen.h"

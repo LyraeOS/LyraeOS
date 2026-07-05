@@ -1,6 +1,6 @@
 #include "screen/gfx.h"
 #include "limine.h"
-#include "mem.h"
+#include "memory/mem.h"
 #include "util.h"
 #include "screen/tty.h"
 #include <stdbool.h>
@@ -11,6 +11,9 @@
 #include "shell/shell.h"
 #include "intr/idt.h"
 #include "intr/keyboard.h"
+#include "memory/kheap.h"
+#include "memory/pmm.h"
+#include "memory/vmm.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
     limine_base_revision[] = LIMINE_BASE_REVISION(4);
@@ -31,6 +34,13 @@ __attribute__((used,
 
 __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t
     limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
+
+__attribute__((
+    used,
+    section(
+        ".limine_requests"))) static volatile struct limine_firmware_type_request
+    fw_type_request = {.id = LIMINE_FIRMWARE_TYPE_REQUEST_ID, .revision = 0};
+
 extern void fpu_init();
 void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
@@ -52,17 +62,35 @@ void kmain(void) {
     if (mem_resp == NULL) {
         panic("No memory map :(");
     }
-    kprintf("[{o}MEM{r}] => Getting largest memory page...\n", cur->info);
-    uint64_t largest_page_size = 0, index = 0;
-    for (uint64_t i = 0; i < mem_resp->entry_count; i++) {
-        const struct limine_memmap_entry *entry = mem_resp->entries[i];
-        if (entry->length > largest_page_size && entry->type == LIMINE_MEMMAP_USABLE) {
-            kprintf("[{o}MEM{r}] => new largest page -> {d} MiB {d} KiB\n", cur->success, entry->length/1024/1024, (entry->length/1024)%1024);
-            largest_page_size = entry->length;
-            index = i;
-        }
+    const struct limine_firmware_type_response *fw_type_resp = fw_type_request.response;
+    char* friendly_name;
+    switch (fw_type_resp->firmware_type) {
+	case LIMINE_FIRMWARE_TYPE_EFI32:
+	    friendly_name = "EFI32";
+	    break;
+	case LIMINE_FIRMWARE_TYPE_EFI64:
+	    friendly_name = "EFI64";
+	    break;
+	case LIMINE_FIRMWARE_TYPE_X86BIOS:
+	    friendly_name = "BIOS";
+	    break;
+	default:
+	    friendly_name = "UNKNOWN";
+	    break;
     }
-    kprintf("[{o}MEM{r}] => largest page id: {d}\n", cur->info, index);
+    kprintf("[{o}FW{r}] => firmware type is {s}\n", cur->info, friendly_name);
+    pmm_init(mem_resp);
+    vmm_init();
+    tty_clear();
+    kheap_init(0xFFFF900000000000, 4);
+
+    int* b = kmalloc(sizeof(int)*4);
+    b[0] = 1;
+    b[1] = 2;
+    b[2] = 3;
+    b[3] = 4;
+    kfree(b);
+
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();

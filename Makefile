@@ -103,15 +103,16 @@ bin/$(OUTPUT).iso: limine-binary/limine bin/$(OUTPUT)
 
 .PHONY: run-bios
 run-bios: bin/$(OUTPUT).iso
-	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 500M -serial stdio
+	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 2G -serial stdio
 .PHONY: run-efi
 run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
 	qemu-system-x86_64 \
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=edk2-ovmf-bins/ovmf-code-x86_64.fd,readonly=on \
 		-cdrom bin/$(OUTPUT).iso \
-		-m 500M \
-		-serial stdio
+		-m 8G \
+		-serial stdio \
+		-d int,cpu_reset -D qemu.log
 
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/$(OUTPUT).iso
