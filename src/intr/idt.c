@@ -69,7 +69,6 @@ void idt_install() {
     idt_set_gate(41, (uint64_t) ISR41, 0x08, 0x8E, 0);
     idt_set_gate(42, (uint64_t) ISR42, 0x08, 0x8E, 0);
     idt_set_gate(43, (uint64_t) ISR43, 0x08, 0x8E, 0);
-    idt_set_gate(44, (uint64_t) ISR44, 0x08, 0x8E, 0);
     idt_set_gate(45, (uint64_t) ISR45, 0x08, 0x8E, 0);
     idt_set_gate(46, (uint64_t) ISR46, 0x08, 0x8E, 0);
     idt_set_gate(47, (uint64_t) ISR47, 0x08, 0x8E, 0);
@@ -284,6 +283,8 @@ void idt_install() {
 
     idt_set_gate(32, (uint64_t) timer_irq, 0x08, 0x8E, 0);
     idt_set_gate(33, (uint64_t) keyboard_irq, 0x08, 0x8E, 0);
+    idt_set_gate(44, (uint64_t) mouse_irq, 0x08, 0x8E, 0);
+    mouse_init();
 
     idt_load();
     remap_pic(0x20, 0x28);
@@ -454,3 +455,4 @@ void isr_handler(registers_t *regs) {
             regs->rip);
     hlt_loop();
 }
+

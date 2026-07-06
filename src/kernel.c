@@ -14,6 +14,7 @@
 #include "memory/kheap.h"
 #include "memory/pmm.h"
 #include "memory/vmm.h"
+#include "intr/mouse.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
     limine_base_revision[] = LIMINE_BASE_REVISION(4);
@@ -53,11 +54,6 @@ void kmain(void) {
     }
     kprintf("Booting LyraeOS!\n");
     const TTYTheme* cur = tty_cur_theme();
-    kprintf("[{o}GDT{r}] => Init GDT\n", cur->info);
-    gdt_install();
-    keyboard_init(&keypress_queue);
-    kprintf("[{o}IDT{r}] => Init IDT\n", cur->info);
-    idt_install();
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
         panic("No memory map :(");
@@ -79,9 +75,9 @@ void kmain(void) {
 	    break;
     }
     kprintf("[{o}FW{r}] => firmware type is {s}\n", cur->info, friendly_name);
+    kprintf("[{o}GDT{r}] => Init GDT\n", cur->info);
     pmm_init(mem_resp);
     vmm_init();
-    tty_clear();
     kheap_init(0xFFFF900000000000, 4);
 
     int* b = kmalloc(sizeof(int)*4);
@@ -91,6 +87,11 @@ void kmain(void) {
     b[3] = 4;
     kfree(b);
 
+    gdt_install();
+    keyboard_init(&keypress_queue);
+    kprintf("[{o}IDT{r}] => Init IDT\n", cur->info);
+    idt_install();
+    tty_clear();
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
