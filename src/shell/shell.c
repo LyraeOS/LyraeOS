@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "intr/mouse.h"
 
 int split_args(char *buf, char **argv)
 {
@@ -87,6 +88,10 @@ void command_handler(char *buf) {
 	    
 	    gfx_update_scale(size);
       }
+    } else if (strcmp(argv[0], "cur")) {
+        mouse_state_t* state = mouse_get_state();
+        mouse_set_enable(!state->enabled);
+        tty_clear();
     } else if (!strcmp(argv[0], "")) {
       kprintf("{o}Unknown command: {s}{r}\n", tty_cur_theme()->error, argv[0]);
     }
@@ -97,7 +102,7 @@ void shell_loop()
     keyboard_pop(&keypress_queue);
     kprintf("Welcome to {o}LyraeOS{r}!\n", cur_theme->accent);
     kprintf("{o}kernel@lyraeos{r} $ ", cur_theme->accent);
-    char command_buf[50];
+    char command_buf[50] = {0};
     for (;;)
     {
         char c = wait_for_key(&keypress_queue);

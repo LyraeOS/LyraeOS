@@ -53,7 +53,7 @@ typedef struct {
 extern void idt_load();
 extern void timer_irq(void);
 extern void keyboard_irq(void);
-extern void mouse_handler(void);
+extern void mouse_irq(void);
 void idt_set_gate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags, uint8_t ist);
 void init_pit(uint32_t frequency);
 void idt_install();

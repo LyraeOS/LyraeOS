@@ -283,7 +283,8 @@ void idt_install() {
 
     idt_set_gate(32, (uint64_t) timer_irq, 0x08, 0x8E, 0);
     idt_set_gate(33, (uint64_t) keyboard_irq, 0x08, 0x8E, 0);
-    idt_set_gate(44, (uint64_t) mouse_handler, 0x08, 0x8E, 0);
+    idt_set_gate(44, (uint64_t) mouse_irq, 0x08, 0x8E, 0);
+    mouse_init();
 
     idt_load();
     remap_pic(0x20, 0x28);

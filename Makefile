@@ -10,6 +10,12 @@ NASMFLAGS := -g
 
 LDFLAGS :=
 
+QEMUFLAGS := \
+		-cdrom bin/$(OUTPUT).iso \
+		-m 8G \
+		-serial stdio \
+		-usb -device usb-tablet
+
 override CC_IS_CLANG := $(shell ! $(CC) --version 2>/dev/null | grep -q '^Target: '; echo $$?)
 
 override CFLAGS += \
@@ -103,16 +109,13 @@ bin/$(OUTPUT).iso: limine-binary/limine bin/$(OUTPUT)
 
 .PHONY: run-bios
 run-bios: bin/$(OUTPUT).iso
-	qemu-system-x86_64 -cdrom bin/$(OUTPUT).iso -m 2G -serial stdio
+	qemu-system-x86_64 $(QEMUFLAGS)
 .PHONY: run-efi
 run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
 	qemu-system-x86_64 \
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=edk2-ovmf-bins/ovmf-code-x86_64.fd,readonly=on \
-		-cdrom bin/$(OUTPUT).iso \
-		-m 8G \
-		-serial stdio \
-		-d int,cpu_reset -D qemu.log
+		$(QEMUFLAGS)
 
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/$(OUTPUT).iso

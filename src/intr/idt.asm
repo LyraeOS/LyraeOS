@@ -61,6 +61,18 @@ keyboard_irq:
     popaq
     iretq
 
+global mouse_irq
+extern mouse_handler
+
+mouse_irq:
+    pushaq
+    cld
+    cli
+    call mouse_handler
+    sti
+    popaq
+    iretq
+
 global idt_load
 extern idtp
 

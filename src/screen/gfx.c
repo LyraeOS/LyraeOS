@@ -139,6 +139,10 @@ void gfx_set_pixel(size_t x, size_t y, uint32_t c) {
   gfx_ctx.fb_ptr[x+y*gfx_ctx.bytePitch] = c;
 }
 
+uint32_t gfx_get_pixel(size_t x, size_t y) {
+  return gfx_ctx.fb_ptr[x+y*gfx_ctx.bytePitch];
+}
+
 void font_scale(uint8_t *buf, char c) {
   int factor = gfx_ctx.scaling_info.factor;
   int width = gfx_ctx.scaling_info.width;
