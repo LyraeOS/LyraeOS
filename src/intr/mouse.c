@@ -68,7 +68,9 @@ void mouse_handler() {
     if (mouse_state.cycle == 3) {
         mouse_state.cycle = 0;
 
-        mouse_state.pressed = (mouse_state.packet[0] & 0x1);
+        mouse_state.left_click = (mouse_state.packet[0] & 0x1);
+        mouse_state.right_click = (mouse_state.packet[0] & 0x2);
+        mouse_state.middle_click = (mouse_state.packet[0] & 0x4);
 
         int dx = (int)(char)mouse_state.packet[1];
         int dy = (int)(char)mouse_state.packet[2];

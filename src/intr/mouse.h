@@ -13,7 +13,9 @@
 typedef struct {
     int x;
     int y;
-    bool pressed;
+    bool left_click;
+    bool right_click;
+    bool middle_click;
 
     uint8_t data;
     uint8_t cycle;
