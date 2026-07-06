@@ -14,6 +14,7 @@
 #include "memory/kheap.h"
 #include "memory/pmm.h"
 #include "memory/vmm.h"
+#include "intr/mouse.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t
     limine_base_revision[] = LIMINE_BASE_REVISION(4);
@@ -90,6 +91,9 @@ void kmain(void) {
     b[2] = 3;
     b[3] = 4;
     kfree(b);
+
+    mouse_init();
+
 
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
