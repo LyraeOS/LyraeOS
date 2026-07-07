@@ -36,6 +36,7 @@ void gfx_fill_slow(uint32_t c);
 void gfx_draw_character(char c, int x, int y, uint32_t fg, uint32_t bg);
 void gfx_draw_character_transparent(char c, int start_x, int start_y, uint32_t fg);
 void gfx_set_pixel(size_t x, size_t y, uint32_t c);
+uint32_t gfx_get_pixel(size_t x, size_t y);
 void font_scale(uint8_t *buf, char c);
 
 void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c);
