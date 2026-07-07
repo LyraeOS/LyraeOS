@@ -269,56 +269,74 @@ void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c) {
   gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p1.x, p2.y), c);
   gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p1.x, p2.y), c);
 }
-void gfx_draw_triangle(uint32_t c) {
-	int p[3][2] = {
-	  { 360,  55},
-	  { 330, 200},
-	  { 100, 400},
-	};
-	float e[3][2] = {
-		{(float)(p[0][1]-p[1][1])/(p[0][0]-p[1][0]), //slope
-	   (float)(p[0][1]-p[1][1])/(p[0][0]-p[1][0]) * p[0][0] * -1 + p[0][1]},				   //y-int
-		{(float)(p[1][1]-p[2][1])/(p[1][0]-p[2][0]),
-		 (float)(p[1][1]-p[2][1])/(p[1][0]-p[2][0]) * p[1][0] * -1 + p[1][1]},
-		{(float)(p[2][1]-p[0][1])/(p[2][0]-p[0][0]),
-		 (float)(p[2][1]-p[0][1])/(p[2][0]-p[0][0]) * p[2][0]* -1  + p[2][1]},
-	};
-	int bounds[2][2] = {
-		{min(p[0][0], min(p[1][0],p[2][0])), min(p[0][1], min(p[1][1],p[2][1]))},//bottom left of bounding box to draw in
-		{max(p[0][0], max(p[1][0],p[2][0])), max(p[0][1], max(p[1][1],p[2][1]))},//top right of bounding box to draw in
-	};
-	int starty = bounds[0][1];	
-	while (1) {
-		int inter[sizeof(e)/sizeof(e[0])];
-		for (int i = 0; i < (int)(sizeof(e)/sizeof(e[0])); i++) { 
-			inter[i] = (starty - e[i][1])/e[i][0];
+
+
+void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
+    gfx_draw_line(p1, p2, c);
+    gfx_draw_line(p2, p3, c);
+    gfx_draw_line(p3, p1, c);
+}
+
+
+typedef struct {
+    float slope, y_int;
+    vec2 a, b;
+} line_descriptor_t;
+
+static inline float calculate_slope(vec2 p1, vec2 p2) {
+    return (float)(p1.y - p2.y)/(p1.x - p2.x);
+}
+static inline float calculate_y_int(vec2 p1, vec2 p2) {
+    return calculate_slope(p1, p2) * -p1.x + p1.y;
+}
+
+void gfx_draw_triangle_filled(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
+    line_descriptor_t descriptors[3] = {
+        {
+            .slope = calculate_slope(p1, p2), 
+            .y_int = calculate_y_int(p1, p2),
+            .a = p1,
+            .b = p2
+        },
+        {
+            .slope = calculate_slope(p2, p3),
+            .y_int = calculate_y_int(p2, p3),
+            .a = p2,
+            .b = p3,
+        },
+        {
+            .slope = calculate_slope(p3, p1),
+            .y_int = calculate_y_int(p3, p1),
+            .a = p3,
+            .b = p1,
+        }
+    };
+    int descriptors_length = sizeof(descriptors) / sizeof(line_descriptor_t);
+    vec2 bounds[2] = {
+        vec2_new(min(p1.x, min(p2.x, p3.x)), min(p1.y, min(p2.y, p3.y))),
+        vec2_new(max(p1.x, max(p2.x, p3.x)), max(p1.y, max(p2.y, p3.y))),
+    };
+	int starty = bounds[0].y;	
+	while (starty < bounds[1].y) {
+		int inter[descriptors_length];
+		for (int i = 0; i < descriptors_length; i++) { 
+            line_descriptor_t* cur = &descriptors[i];
+			inter[i] = (starty - cur->y_int) / cur->slope;
 		}
-		int x = bounds[0][0];
-		while (1) {
+        int startx = bounds[0].x;
+		while (startx < bounds[1].x) {
 			int intersects = 0;
-			//kprintf("{d}\n",(int)(sizeof(inter)/sizeof(inter[0])));
-			for (int i = 0; i < (int)(sizeof(inter)/sizeof(inter[0])); i++) {
-				if (x > inter[i]) {
+			for (int i = 0; i < descriptors_length; i++) {
+				if (startx > inter[i]) {
 					intersects++;
 				}
 			}
-			//kprintf("{d}\n",x);
 			if (intersects == 1) {
-				gfx_set_pixel(x, starty, c);
-				//kprintf("{d},{d}\n",x,starty);
+				gfx_set_pixel(startx, starty, c);
 			}
-			if (x > bounds[1][0]) {
-				break;
-			}
-			x++;
+			startx++;
 		}
 		starty += 1;
-		if (starty > bounds[1][1]) {
-			break;
-		}
-		gfx_draw_circle(vec2_new(p[0][0],p[0][1]),10,0xFF0000);
-		gfx_draw_circle(vec2_new(p[1][0],p[1][1]),10,0xFF0000);
-		gfx_draw_circle(vec2_new(p[2][0],p[2][1]),10,0xFF0000);
 	}
 }
 
