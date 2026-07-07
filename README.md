@@ -3,20 +3,24 @@ LyraeOS is a 64bit operating system using the limine bootloader. It is designed 
 
 # Goals
 ## Current Goals
-- Memory Allocator
+- GUI
+- File System
+- SMP
 - Scheduler
-- Userspace
+  - APIC ish
 
 ## Future Goals
-- Gui
-- ELF binaries
-- Filesystem
+- ELF binaries and userspace
+- Multi-processing Conway's Game of Life
+- Filled Polygons
 
 ## Current Progress
 - Very basic shell
-- Conways game of life
+- Conway's game of life
 - Minesweeper
 - Serpinksi triangles
+- Memory Allocator
+- Filled Triangles
 
 # Naming
 
