@@ -75,7 +75,6 @@ void kmain(void) {
 	    break;
     }
     kprintf("[{o}FW{r}] => firmware type is {s}\n", cur->info, friendly_name);
-    kprintf("[{o}GDT{r}] => Init GDT\n", cur->info);
     pmm_init(mem_resp);
     vmm_init();
     kheap_init(0xFFFF900000000000, 4);
@@ -87,19 +86,12 @@ void kmain(void) {
     b[3] = 4;
     kfree(b);
 
-<<<<<<< HEAD
-    gfx_draw_triangle(0xFFFFFF);
-    while (1) {
-    	asm ("hlt");
-    }
-
-=======
     gdt_install();
+    kprintf("[{o}GDT{r}] => Init GDT\n", cur->info);
     keyboard_init(&keypress_queue);
     kprintf("[{o}IDT{r}] => Init IDT\n", cur->info);
     idt_install();
     tty_clear();
->>>>>>> c8dd9084f5ce6740cca66554dc7a7b7f22570578
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
