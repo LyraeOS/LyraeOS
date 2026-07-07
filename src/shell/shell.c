@@ -50,7 +50,7 @@ void command_handler(char *buf) {
     } else if (strcmp(argv[0], "clear")) {
         tty_clear();
     } else if (strcmp(argv[0], "panic")) {
-	*(volatile int *)0xDEADBEEF = 1;
+        *(volatile int *)0xDEADBEEF = 1;
     } else if (strcmp(argv[0], "echo")) {
         for (int i = 1; i < argc; i++) {
             kprintf("{s} ", argv[i]);
