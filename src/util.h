@@ -16,4 +16,15 @@ void wait_ms(uint64_t ms);
 int atoi(const char *s);
 void panic(const char* message);
 void assert(bool condition, const char* message);
+int sum(int* array, int size);
+float fsum(float* array, int size);
+int min(int a, int b);
+int max(int a, int b);
+float fmin(float a, float b);
+float fmax(float a, float b);
+int amin(int* array, int size);
+int amax(int* array, int size);
+float afmin(float* array, int size);
+float afmax(float* array, int sise);
+
 #endif

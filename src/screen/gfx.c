@@ -265,10 +265,57 @@ void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c) {
   gfx_draw_line(vec2_new(p2.x, p2.y), vec2_new(p1.x, p2.y), c);
   gfx_draw_line(vec2_new(p1.x, p1.y), vec2_new(p1.x, p2.y), c);
 }
-void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
-  gfx_draw_line(p1, p2, c);
-  gfx_draw_line(p2, p3, c);
-  gfx_draw_line(p3, p1, c);
+void gfx_draw_triangle(uint32_t c) {
+	int p[3][2] = {
+	  { 360,  55},
+	  { 330, 200},
+	  { 100, 400},
+	};
+	float e[3][2] = {
+		{(float)(p[0][1]-p[1][1])/(p[0][0]-p[1][0]), //slope
+	   (float)(p[0][1]-p[1][1])/(p[0][0]-p[1][0]) * p[0][0] * -1 + p[0][1]},				   //y-int
+		{(float)(p[1][1]-p[2][1])/(p[1][0]-p[2][0]),
+		 (float)(p[1][1]-p[2][1])/(p[1][0]-p[2][0]) * p[1][0] * -1 + p[1][1]},
+		{(float)(p[2][1]-p[0][1])/(p[2][0]-p[0][0]),
+		 (float)(p[2][1]-p[0][1])/(p[2][0]-p[0][0]) * p[2][0]* -1  + p[2][1]},
+	};
+	int bounds[2][2] = {
+		{min(p[0][0], min(p[1][0],p[2][0])), min(p[0][1], min(p[1][1],p[2][1]))},//bottom left of bounding box to draw in
+		{max(p[0][0], max(p[1][0],p[2][0])), max(p[0][1], max(p[1][1],p[2][1]))},//top right of bounding box to draw in
+	};
+	int starty = bounds[0][1];	
+	while (1) {
+		int inter[sizeof(e)/sizeof(e[0])];
+		for (int i = 0; i < (int)(sizeof(e)/sizeof(e[0])); i++) { 
+			inter[i] = (starty - e[i][1])/e[i][0];
+		}
+		int x = bounds[0][0];
+		while (1) {
+			int intersects = 0;
+			//kprintf("{d}\n",(int)(sizeof(inter)/sizeof(inter[0])));
+			for (int i = 0; i < (int)(sizeof(inter)/sizeof(inter[0])); i++) {
+				if (x > inter[i]) {
+					intersects++;
+				}
+			}
+			//kprintf("{d}\n",x);
+			if (intersects == 1) {
+				gfx_set_pixel(x, starty, c);
+				//kprintf("{d},{d}\n",x,starty);
+			}
+			if (x > bounds[1][0]) {
+				break;
+			}
+			x++;
+		}
+		starty += 1;
+		if (starty > bounds[1][1]) {
+			break;
+		}
+		gfx_draw_circle(vec2_new(p[0][0],p[0][1]),10,0xFF0000);
+		gfx_draw_circle(vec2_new(p[1][0],p[1][1]),10,0xFF0000);
+		gfx_draw_circle(vec2_new(p[2][0],p[2][1]),10,0xFF0000);
+	}
 }
 
 

@@ -71,3 +71,74 @@ void panic(const char* message) {
   hlt_loop();
 }
 void assert(bool condition, const char* message) { if (!condition) panic(message); }
+
+int sum(int* array, int size) { //(int)(sizeof(array) / sizeof(array[0]))
+    int acc = 0;
+    for (int i = 0; i < size; i++)
+    acc += array[i];
+    return acc;
+}
+
+float fsum(float* array, int size) { //(float)(sizeof(array) / sizeof(array[0]))
+    float acc = 0;
+    for (int i = 0; i < size; i++)
+    acc += array[i];
+    return acc;
+}
+
+int min(int a, int b) {
+    if (a < b) return a;
+    return b;
+}
+int max(int a, int b) {
+    if (a > b) return a;
+    return b;
+}
+float fmin(float a, float b) {
+    if (a < b) return a;
+    return b;
+}
+float fmax(float a, float b) {
+    if (a > b) return a;
+    return b;
+}
+
+int amin(int* array, int size) { //(int)(sizeof(array)/sizeof(array[0])
+    int value = array[0];
+    for (int i = 0; i < size; i++) {
+    	if (value > array[i]) {
+		value = array[i];
+	}
+    }
+    return value;
+}
+
+int amax(int* array, int size) { //(int)(sizeof(array)/sizeof(array[0])
+    int value = array[0];
+    for (int i = 0; i < size; i++) {
+    	if (value < array[i]) {
+		value = array[i];
+	}
+    }
+    return value;
+}
+
+float afmin(float* array, int size) { //(float)(sizeof(array)/sizeof(array[0]))
+    float value = array[0];
+    for (int i = 0; i < size; i++) {
+    	if (value > array[i]) {
+		value = array[i];
+	}
+    }
+    return value;
+}
+
+float afmax(float* array, int size) { //(float)(sizeof(array)/sizeof(array[0]))
+    float value = array[0];
+    for (int i = 0; i < size; i++) {
+    	if (value < array[i]) {
+		value = array[i];
+	}
+    }
+    return value;
+}

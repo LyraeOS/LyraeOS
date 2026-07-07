@@ -42,7 +42,7 @@ void gfx_draw_rectangle(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_rectangle_filled(vec2 p1, vec2 p2, uint32_t c);
 void gfx_draw_circle(vec2 center, uint32_t radius, uint32_t c);
 void gfx_draw_line(vec2 p1, vec2 p2, uint32_t c);
-void gfx_draw_triangle(vec2 p1, vec2 p2, vec2 p3, uint32_t c);
+void gfx_draw_triangle(uint32_t c);
 
 void gfx_update_scale(int scale_factor);
 ScalingInfo gfx_get_scaling_info();

@@ -91,6 +91,11 @@ void kmain(void) {
     b[3] = 4;
     kfree(b);
 
+    gfx_draw_triangle(0xFFFFFF);
+    while (1) {
+    	asm ("hlt");
+    }
+
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();
