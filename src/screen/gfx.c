@@ -289,27 +289,20 @@ static inline float calculate_slope(vec2 p1, vec2 p2) {
 static inline float calculate_y_int(vec2 p1, vec2 p2) {
     return calculate_slope(p1, p2) * -p1.x + p1.y;
 }
-
-void gfx_draw_triangle_filled(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
-    line_descriptor_t descriptors[3] = {
-        {
+static inline line_descriptor_t generate_line_descriptor(vec2 p1, vec2 p2) {
+    return (line_descriptor_t) {
             .slope = calculate_slope(p1, p2), 
             .y_int = calculate_y_int(p1, p2),
             .a = p1,
             .b = p2
-        },
-        {
-            .slope = calculate_slope(p2, p3),
-            .y_int = calculate_y_int(p2, p3),
-            .a = p2,
-            .b = p3,
-        },
-        {
-            .slope = calculate_slope(p3, p1),
-            .y_int = calculate_y_int(p3, p1),
-            .a = p3,
-            .b = p1,
-        }
+    };
+}
+
+void gfx_draw_triangle_filled(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
+    line_descriptor_t descriptors[3] = {
+        generate_line_descriptor(p1, p2),
+        generate_line_descriptor(p2, p3),
+        generate_line_descriptor(p3, p1),
     };
     int descriptors_length = sizeof(descriptors) / sizeof(line_descriptor_t);
     vec2 bounds[2] = {
