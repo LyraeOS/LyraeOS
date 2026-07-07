@@ -30,6 +30,15 @@ uint8_t inb(uint16_t port) {
                    : "memory");
     return ret;
 }
+void outl(uint16_t port, uint32_t val) {
+    __asm__ volatile ( "outl %0, %w1" : : "a"(val), "Nd"(port) );
+}
+uint32_t inl(uint16_t port) {
+    uint32_t ret;
+    __asm__ volatile ( "inl %w1, %0" : "=a"(ret) : "Nd"(port) );
+    return ret;
+}
+
 void wait_ms(uint64_t ms) {
   uint64_t end_time = timer_ticks + ms;
   while (timer_ticks < end_time) {
