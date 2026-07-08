@@ -1,4 +1,5 @@
 #include "minesweeper.h"
+#include "intr/mouse.h"
 
 
 #define GRIDX 30
@@ -174,35 +175,25 @@ void minesweeperMain(void) {
         }
     }
 
+    bool prev = mouse_get_state()->enabled;
+    mouse_set_enable(true);
     int temp = 1;
     while (temp == 1 && amountClicked < amountNeeded) {
-        gfx_draw_rectangle(vec2_new(xc * RECTX+1, yc * RECTY+1), vec2_new(xc * RECTX + RECTX-1, yc * RECTY + RECTY-1), 0x0000ff);
-        char key = wait_for_key(&keypress_queue);
-        if (key == ' ') {
-            temp = click(xc,yc);
-        } else if (key == 'x') {
-            flag(xc,yc);
-        } else if (key == 'w') {
-            if (yc > 0) {
-                drawSquare(xc, yc);
-                yc--;
-            }
-        } else if (key == 'a') {
-            if (xc > 0) {
-                drawSquare(xc, yc);
-                xc--;
-            }
-        } else if (key == 's') {
-            if (yc < GRIDY - 1) {
-                drawSquare(xc, yc);
-                yc++;
-            }
-        } else if (key == 'd') {
-            if (xc < GRIDX - 1) {
-                drawSquare(xc, yc);
-                xc++;
-            }
-        } else if (key == ';') {
+        mouse_state_t* state = {0};
+        state = mouse_get_state(); 
+        while (!state->left_click && !state->right_click && keyboard_empty(&keypress_queue)) {
+            xc = state->x / RECTX;
+            yc = state->y / RECTY;
+            state = mouse_get_state();
+        }
+        char pressed = '\0';
+        if (!keyboard_empty(&keypress_queue))
+            pressed = keyboard_pop(&keypress_queue);
+        if (state->left_click) {
+            temp = click(xc, yc);
+        } else if (state->right_click) {
+            flag(xc, yc);
+        } else if (pressed == ';') {
             for (int x = 0; x < GRIDX; x++) { //Defines squares as numbers for how many mines are around them
                 for (int y = 0; y < GRIDY; y++) {
                     if (grid[x][y] == 9) {
@@ -211,7 +202,7 @@ void minesweeperMain(void) {
                     drawSquare(x,y);
                 }
             }
-        } else if (key == ':') {
+        } else if (pressed == ':') {
             for (int x = 0; x < GRIDX; x++) { //Defines squares as numbers for how many mines are around them
                 for (int y = 0; y < GRIDY; y++) {
                     if (grid[x][y] == 9) {
@@ -225,6 +216,7 @@ void minesweeperMain(void) {
             }
         }
         drawSquare(xc, yc);
+        wait_ms(100);
     }
     
     for (int x = 0; x < GRIDX; x++) {
@@ -234,6 +226,7 @@ void minesweeperMain(void) {
     }
 
     if (amountClicked >= amountNeeded) {
+        mouse_set_enable(prev);
         ConwaysMain(2);
         tty_clear();
     } else {

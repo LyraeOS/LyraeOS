@@ -92,9 +92,9 @@ void kmain(void) {
     keyboard_init(&keypress_queue);
     kprintf("[{o}IDT{r}] => Init IDT\n", cur->info);
     idt_install();
-    tty_clear();
-
+    kprintf("[{o}PCI{r}] => probing pci bus...\n", cur->info);
     pci_init();
+
     shell_loop();
     kprintf("OS Functions Complete, Halting...\n");
     hlt_loop();

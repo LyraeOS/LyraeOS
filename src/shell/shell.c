@@ -1,5 +1,6 @@
 #include "shell.h"
 #include "intr/mouse.h"
+#include "hal/pci.h"
 
 int split_args(char *buf, char **argv)
 {
@@ -92,6 +93,8 @@ void command_handler(char *buf) {
         mouse_state_t* state = mouse_get_state();
         mouse_set_enable(!state->enabled);
         tty_clear();
+    } else if (strcmp(argv[0], "pci")) {
+        pci_print_info();
     } else if (!strcmp(argv[0], "")) {
       kprintf("{o}Unknown command: {s}{r}\n", tty_cur_theme()->error, argv[0]);
     }

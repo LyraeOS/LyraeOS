@@ -100,11 +100,18 @@ void mouse_handler() {
 
 // 9x9 square until fancier cursor
 void mouse_draw(uint32_t color) {
-    for (int x = 0; x < CURSOR_WIDTH; x++) {
-        for (int y = 0; y < CURSOR_HEIGHT; y++) {
-            gfx_set_pixel(mouse_state.x + x, mouse_state.y + y, color);
-        }
+    uint32_t main_color = color;
+    uint32_t secondary = 0x000000;
+    if (mouse_state.left_click) {
+        main_color = secondary;
+        secondary = color;
     }
+    gfx_draw_rectangle_filled(vec2_new(mouse_state.x, mouse_state.y),
+                              vec2_new(mouse_state.x + CURSOR_WIDTH, mouse_state.y + CURSOR_HEIGHT),
+                              secondary);
+    gfx_draw_rectangle_filled(vec2_new(mouse_state.x + 2, mouse_state.y + 2),
+                              vec2_new(mouse_state.x + CURSOR_WIDTH - 2, mouse_state.y + CURSOR_HEIGHT - 2),
+                              main_color);
 }
 
 void mouse_set_enable(bool en) {
