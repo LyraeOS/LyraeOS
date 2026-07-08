@@ -1,10 +1,12 @@
 
-#include "gol.h"
+#include <shell/programs/gol.h>
 #include <stdbool.h>
-#include "memory/mem.h"
-#include "screen/gfx.h"
-#include "util.h"
-#include "intr/idt.h"
+#include <mm/mem.h>
+#include <drivers/display/gfx.h>
+#include <lib/util.h>
+#include <cpu/idt.h>
+#include <drivers/display/tty.h>
+#include <kernel/command.h>
 
 static inline size_t cell_index(int x, int y, int grid_y)
 {
@@ -23,6 +25,7 @@ static inline void bit_set(uint8_t *arr, size_t i, bool v)
     else
         arr[i >> 3] &= ~(1u << (i & 7));
 }
+
 void ConwaysMain(int cell_size)
 {
     ScreenSize screen_scale = tty_get_screen_size();
@@ -107,4 +110,20 @@ void ConwaysMain(int cell_size)
         memcpy(grid, temp, (grid_x * grid_y + 7) / 8);
     }
     return;
+}
+
+COMMAND(gol, "runs conways game of life") {
+    if (argc < 2) {
+        kprintf("Usage:\ngol [cell size > 2 ]\n");
+        return 1;
+    } else {
+        int size = atoi(argv[1]);
+        if (size < 2)
+            size = 2;
+        tty_set_cursor_enabled(false);
+        ConwaysMain(size);
+        tty_set_cursor_enabled(true);
+        tty_clear();
+    }
+    return 0;
 }

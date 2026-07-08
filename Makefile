@@ -37,7 +37,9 @@ override CFLAGS += \
 	-mno-mmx \
 	-mno-red-zone \
 	-mcmodel=kernel \
-	-Werror
+	-Werror \
+	-Wno-unused-parameter \
+	-Iinclude
 
 override CPPFLAGS := \
 	-I src \

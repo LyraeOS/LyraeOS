@@ -1,4 +1,5 @@
-#include "matrix.h"
+#include <shell/programs/matrix.h>
+#include <kernel/command.h>
 
 void matrix() {
     TTYTheme* cur = tty_cur_theme();
@@ -32,4 +33,12 @@ void matrix() {
         }
         wait_ms(100);
     }
+}
+
+COMMAND(matrix, "does a matrix kinda thing") {
+    tty_set_cursor_enabled(false);
+    matrix();
+    tty_set_cursor_enabled(true);
+    tty_clear();
+    return 0;
 }

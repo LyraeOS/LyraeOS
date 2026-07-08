@@ -1,4 +1,5 @@
-#include "fractal.h"
+#include <shell/programs/fractal.h>
+#include <kernel/command.h>
 vec2 midpoint(vec2 a, vec2 b) {
     return vec2_new((a.x + b.x) / 2, (a.y + b.y) / 2);
 }
@@ -14,4 +15,18 @@ void sierpinski(vec2 p1, vec2 p2, vec2 p3, int depth) {
     sierpinski(p1, mid12, mid31, depth - 1);
     sierpinski(mid12, p2, mid23, depth - 1);
     sierpinski(mid31, mid23, p3, depth - 1);
+}
+
+COMMAND(serp, "draws a serpinski triangle") {
+    if (argc < 2) {
+        kprintf("Usage:\nserp [iterations size >= 0 ]\n");
+        return 1;
+    } else {
+        int size = atoi(argv[1]);
+        if (size < 0)
+            size = 0;
+        ScreenSize sc = tty_get_screen_size();
+        sierpinski(vec2_new(sc.x - 1, sc.y - 1), vec2_new((sc.x - 1) / 2, 1), vec2_new(1, sc.y - 1), size);
+    }
+    return 0;
 }

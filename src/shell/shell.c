@@ -1,7 +1,8 @@
-#include "shell.h"
-#include "intr/mouse.h"
-#include "hal/pci.h"
+#include <shell/shell.h>
+#include <kernel/command.h>
 
+extern const command_t __commands_start[];
+extern const command_t __commands_end[];
 int split_args(char *buf, char **argv)
 {
     int argc = 0;
@@ -31,72 +32,18 @@ void command_handler(char *buf) {
     int argc = split_args(buf, argv);
     if (argc == 0)
         return;
-
-    if (strcmp(argv[0], "gol")) {
-        if (argc < 2) {
-            kprintf("Usage:\ngol [cell size > 2 ]\n");
-        } else {
-            int size = atoi(argv[1]);
-            if (size < 2)
-                size = 2;
-            tty_set_cursor_enabled(false);
-            ConwaysMain(size);
-            tty_set_cursor_enabled(true);
-            tty_clear();
+    const command_t *cmd = NULL;
+    for (const command_t *c = __commands_start; c < __commands_end; c++) {
+        if (strcmp(c->name, argv[0])) {
+            cmd = c;
+            break;
         }
-    } else if (strcmp(argv[0], "mine")) {
-        tty_set_cursor_enabled(false);
-        minesweeperMain();
-        tty_set_cursor_enabled(true);
-    } else if (strcmp(argv[0], "clear")) {
-        tty_clear();
-    } else if (strcmp(argv[0], "panic")) {
-        *(volatile int *)0xDEADBEEF = 1;
-    } else if (strcmp(argv[0], "echo")) {
-        for (int i = 1; i < argc; i++) {
-            kprintf("{s} ", argv[i]);
-        }
-        kprintf("\n");
-    } else if (strcmp(argv[0], "serp")) {
-        if (argc < 2) {
-            kprintf("Usage:\nserp [iterations size >= 0 ]\n");
-        } else {
-            int size = atoi(argv[1]);
-            if (size < 0)
-                size = 0;
-            ScreenSize sc = tty_get_screen_size();
-            sierpinski(vec2_new(sc.x - 1, sc.y - 1), vec2_new((sc.x - 1) / 2, 1), vec2_new(1, sc.y - 1), size);
-        }
-    } else if (strcmp(argv[0], "matrix")) {
-        tty_set_cursor_enabled(false);
-        matrix();
-        tty_set_cursor_enabled(true);
-        tty_clear();
-    } else if (strcmp(argv[0], "theme")) {
-        if (argc < 2) {
-            kprintf("Usage:\ntheme [light/dark]\n");
-        } else {
-            if (strcmp(argv[1], "light")) tty_change_theme(LYRAE_LIGHT); 
-            if (strcmp(argv[1], "dark")) tty_change_theme(LYRAE_DARK); 
-        }
-    } else if (strcmp(argv[0], "scale")) {
-      if (argc < 2) {
-	kprintf("Usage:\nscale [scale factor as int]\n");
-      } else {
-            int size = atoi(argv[1]);
-            if (size < 1)
-                size = 1;
-	    
-	    gfx_update_scale(size);
-      }
-    } else if (strcmp(argv[0], "cur")) {
-        mouse_state_t* state = mouse_get_state();
-        mouse_set_enable(!state->enabled);
-        tty_clear();
-    } else if (strcmp(argv[0], "pci")) {
-        pci_print_info();
-    } else if (!strcmp(argv[0], "")) {
-      kprintf("{o}Unknown command: {s}{r}\n", tty_cur_theme()->error, argv[0]);
+    }
+    
+    if (cmd) {
+        cmd->fn(argc, argv);
+    } else {
+        kprintf("Unknown command: {s}\n", argv[0]);
     }
 }
 void shell_loop()
@@ -104,6 +51,8 @@ void shell_loop()
     TTYTheme* cur_theme = tty_cur_theme();
     keyboard_pop(&keypress_queue);
     kprintf("Welcome to {o}LyraeOS{r}!\n", cur_theme->accent);
+    kprintf("Type {o}commands{r} for a list of commands.\n", cur_theme->accent);
+    kprintf("And {o}help{r} for the list with descriptions.\n", cur_theme->accent);
     kprintf("{o}kernel@lyraeos{r} $ ", cur_theme->accent);
     char command_buf[50] = {0};
     for (;;)
@@ -124,4 +73,18 @@ void shell_loop()
             kputchar(c);
         }
     }
+}
+
+COMMAND(help, "gets command help") {
+    for (const command_t* c = __commands_start; c < __commands_end; c++) {
+        kprintf("{s} => {s}\n", c->name, c->description);
+    }
+    return 0;
+}
+COMMAND(commands, "lists all the commands") {
+    for (const command_t* c = __commands_start; c < __commands_end; c++) {
+        kprintf("{s} ", c->name);
+    }
+    kprintf("\ntype help for descriptions of the commands\n");
+    return 0;
 }

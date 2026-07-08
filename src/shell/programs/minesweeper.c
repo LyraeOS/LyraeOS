@@ -1,5 +1,7 @@
-#include "minesweeper.h"
-#include "intr/mouse.h"
+#include <shell/programs/minesweeper.h>
+#include <drivers/input/mouse.h>
+#include <kernel/command.h>
+#include <drivers/display/tty.h>
 
 
 #define GRIDX 30
@@ -236,3 +238,9 @@ void minesweeperMain(void) {
 
 
 
+COMMAND(mine, "runs minesweeper") {
+    tty_set_cursor_enabled(false);
+    minesweeperMain();
+    tty_set_cursor_enabled(true);
+    return 0;
+}

@@ -32,6 +32,11 @@ SECTIONS
 
     .rodata : {
         *(.rodata .rodata.*)
+
+        . = ALIGN(8);
+        __commands_start = .;
+        KEEP(*(.commands))
+        __commands_end = .;
     } :rodata
 
     .note.gnu.build-id : {
