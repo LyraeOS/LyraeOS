@@ -78,7 +78,7 @@ void panic(const char* message, ...) {
     va_start(args, message);
     tty_set_cursor_enabled(false);
     tty_change_theme(LYRAE_PANIC);
-    kprintf("[{o}ERROR{r}] KERNEL PANIC: ", LYRAE_PANIC.error);
+    kprintf("[{error}ERROR{reset}] KERNEL PANIC: ");
     vkprintf(message, args);
     va_end(args);
     asm volatile ("cli");

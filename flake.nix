@@ -25,6 +25,10 @@
             nasm
             qemu
             xorriso
+	    cutter
+	    cloc
+	    gdb
+	    clang
           ];
         };
       });

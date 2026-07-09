@@ -103,160 +103,160 @@ int kprintf(const char *restrict format, ...) {
 
 int vkprintf(const char *format, va_list args) {
     FormatMode current = NOTHING;
+    char fmt_specifer_buf[13] = {0}; // 12 + null terminator
     while (*format != '\0') {
         char cur = format[0];
         if (cur == '{') {
-            format++;
             current = FORMATTING;
-            continue;
-        } else if (cur == '}') {
             format++;
-            current = NOTHING;
+            cur = format[0];
+            while (!(cur == '}')) {
+                charcat(fmt_specifer_buf, cur);
+                format++;
+                cur = format[0];
+            }
             continue;
         }
         if (current == NOTHING) {
             // print the character normally
             kprint(&cur, sizeof(char));
             format++;
-        } else {
-            if (cur == 's') {
-                const char *str = va_arg(args, const char *);
-                size_t len = kstrlen(str);
-                kprint(str, len);
-            }
-            if (cur == 'c') {
-                char c = (char) va_arg(args, int);
-                kprint(&c, sizeof(c));
-            }
-            if (cur == 'd') {
-                int64_t num = va_arg(args, int64_t);
-                char buf[12];
-                int s = num;
-                int i = 0;
-                if (num < 0) {
-                    num = -num;
-                }
-                if (num == 0) {
-                    buf[i++] = '0';
-                }
-                while (num > 0) {
-                    buf[i++] = num % 10 + '0';
-                    num /= 10;
-                }
-                if (s < 0) {
-                    buf[i++] = '-';
-                }
-                for (int j = 0, k = i - 1; j < k; j++, k--) {
-                    char temp = buf[j];
-                    buf[j] = buf[k];
-                    buf[k] = temp;
-                }
-                buf[i] = '\0';
-                kprint((const char *) buf, kstrlen(buf));
-            }
-            if (cur == 'x') {
-                size_t num = va_arg(args, size_t);
-                char *nums = "0123456789ABCDEF";
-                char buf[17];
-                int i = 0;
-                if (num == 0) {
-                    buf[i++] = '0';
-                }
-                while (num > 0) {
-                    buf[i++] = nums[num % 16];
-                    num /= 16;
-                }
-                for (int j = 0, k = i - 1; j < k; j++, k--) {
-                    char temp = buf[j];
-                    buf[j] = buf[k];
-                    buf[k] = temp;
-                }
-                buf[i] = '\0';
-                kprint((const char *) buf, kstrlen(buf));
-            }
-	        if (cur == 'X') {
-		        size_t num = va_arg(args,size_t);
-		        static const char nums[] = "0123456789ABCDEF";
-		        char buf[17];
-		        for (size_t i = 0; i < sizeof(num)*2; i++) {
-		            buf[i] = nums[(num >> ((15 - i) * 4)) & 0xF];
-		        }
-
-		        buf[16] = '\0';
-		        kprint("0x", 2);
-		        kprint(buf, 16);
-	            }
-	            if (cur == 'b') {
-		        size_t num = va_arg(args,size_t);
-		        char buf[65];
-		        for (int i = 63; i >= 0; i--) {
-		          buf[63 - i] = num & (1ULL << i) ? '1' : '0';
-		        }
-		        buf[64] = '\0';
-		        kprint(buf, 65);
-	        }
-            if (cur == 'u') {
-                size_t num = va_arg(args, size_t);
-                char buf[17];
-                int i = 0;
-                if (num == 0) {
-                    buf[i++] = '0';
-                }
-                while (num > 0) {
-                    buf[i++] = num % 10ULL + (size_t)'0';
-                    num /= 10ULL;
-                }
-                for (int j = 0, k = i - 1; j < k; j++, k--) {
-                    char temp = buf[j];
-                    buf[j] = buf[k];
-                    buf[k] = temp;
-                }
-                buf[i] = '\0';
-                kprint((const char *) buf, kstrlen(buf));
-            }
-            if (cur == 'f') {
-                double num = va_arg(args, double);
-                char buf[32];
-                int i = 0;
-                if (num < 0) {
-                    buf[i++] = '-';
-                    num = -num;
-                }
-                int int_part = (int) num;
-                double frac_part = num - int_part;
-                char int_buf[16];
-                int int_i = 0;
-                if (int_part == 0) {
-                    int_buf[int_i++] = '0';
-                } else {
-                    while (int_part > 0) {
-                        int_buf[int_i++] = int_part % 10 + '0';
-                        int_part /= 10;
-                    }
-                }
-                for (int j = int_i - 1; j >= 0; j--) {
-                    buf[i++] = int_buf[j];
-                }
-                buf[i++] = '.';
-                for (int j = 0; j < 6; j++) {
-                    frac_part *= 10;
-                    int digit = (int) frac_part;
-                    buf[i++] = digit + '0';
-                    frac_part -= digit;
-                }
-                buf[i] = '\0';
-                kprint((const char *) buf, kstrlen(buf));
-            }
-            // temporary code to reset color
-            if (cur == 'r') {
-                custom_color = tty_ctx.theme.fg;
-            }
-            // temporary code to set color
-            if (cur == 'o') {
-                custom_color = va_arg(args, uint32_t);
-            }
-            format++;
+            continue;
         }
+        if (strcmp(fmt_specifer_buf, "s")) {
+            const char *str = va_arg(args, const char *);
+            size_t len = kstrlen(str);
+            kprint(str, len);
+        } else if (strcmp(fmt_specifer_buf, "c")) {
+            char c = (char) va_arg(args, int);
+            kprint(&c, sizeof(c));
+        } else if (strcmp(fmt_specifer_buf, "d")) {
+            int64_t num = va_arg(args, int64_t);
+            char buf[12];
+            int s = num;
+            int i = 0;
+            if (num < 0) {
+                num = -num;
+            }
+            if (num == 0) {
+                buf[i++] = '0';
+            }
+            while (num > 0) {
+                buf[i++] = num % 10 + '0';
+                num /= 10;
+            }
+            if (s < 0) {
+                buf[i++] = '-';
+            }
+            for (int j = 0, k = i - 1; j < k; j++, k--) {
+                char temp = buf[j];
+                buf[j] = buf[k];
+                buf[k] = temp;
+            }
+            buf[i] = '\0';
+            kprint((const char *) buf, kstrlen(buf));
+        } else if (strcmp(fmt_specifer_buf, "x")) {
+            size_t num = va_arg(args, size_t);
+            char *nums = "0123456789ABCDEF";
+            char buf[17];
+            int i = 0;
+            if (num == 0) {
+                buf[i++] = '0';
+            }
+            while (num > 0) {
+                buf[i++] = nums[num % 16];
+                num /= 16;
+            }
+            for (int j = 0, k = i - 1; j < k; j++, k--) {
+                char temp = buf[j];
+                buf[j] = buf[k];
+                buf[k] = temp;
+            }
+            buf[i] = '\0';
+            kprint((const char *) buf, kstrlen(buf));
+        } else if (strcmp(fmt_specifer_buf, "X")) {
+            size_t num = va_arg(args,size_t);
+            static const char nums[] = "0123456789ABCDEF";
+            char buf[17];
+            for (size_t i = 0; i < sizeof(num)*2; i++) {
+                buf[i] = nums[(num >> ((15 - i) * 4)) & 0xF];
+            }
+
+            buf[16] = '\0';
+            kprint("0x", 2);
+            kprint(buf, 16);
+        } else if (strcmp(fmt_specifer_buf, "b")) {
+                size_t num = va_arg(args,size_t);
+                char buf[65];
+                for (int i = 63; i >= 0; i--) {
+                    buf[63 - i] = num & (1ULL << i) ? '1' : '0';
+            }
+            buf[64] = '\0';
+            kprint(buf, 65);
+        } else if (strcmp(fmt_specifer_buf, "u")) {
+            size_t num = va_arg(args, size_t);
+            char buf[17];
+            int i = 0;
+            if (num == 0) {
+                buf[i++] = '0';
+            }
+            while (num > 0) {
+                buf[i++] = num % 10ULL + (size_t)'0';
+                num /= 10ULL;
+            }
+            for (int j = 0, k = i - 1; j < k; j++, k--) {
+                char temp = buf[j];
+                buf[j] = buf[k];
+                buf[k] = temp;
+            }
+            buf[i] = '\0';
+            kprint((const char *) buf, kstrlen(buf));
+        } else if (strcmp(fmt_specifer_buf, "f")) {
+            double num = va_arg(args, double);
+            char buf[32];
+            int i = 0;
+            if (num < 0) {
+                buf[i++] = '-';
+                num = -num;
+            }
+            int int_part = (int) num;
+            double frac_part = num - int_part;
+            char int_buf[16];
+            int int_i = 0;
+            if (int_part == 0) {
+                int_buf[int_i++] = '0';
+            } else {
+                while (int_part > 0) {
+                    int_buf[int_i++] = int_part % 10 + '0';
+                    int_part /= 10;
+                }
+            }
+            for (int j = int_i - 1; j >= 0; j--) {
+                buf[i++] = int_buf[j];
+            }
+            buf[i++] = '.';
+            for (int j = 0; j < 6; j++) {
+                frac_part *= 10;
+                int digit = (int) frac_part;
+                buf[i++] = digit + '0';
+                frac_part -= digit;
+            }
+            buf[i] = '\0';
+            kprint((const char *) buf, kstrlen(buf));
+        } else if (strcmp(fmt_specifer_buf, "reset")) {
+            custom_color = tty_ctx.theme.fg;
+        }
+        if (strcmp(fmt_specifer_buf, "fg")) custom_color = tty_ctx.theme.fg;
+        if (strcmp(fmt_specifer_buf, "bg")) custom_color = tty_ctx.theme.bg;
+        if (strcmp(fmt_specifer_buf, "error")) custom_color = tty_ctx.theme.error;
+        if (strcmp(fmt_specifer_buf, "warning")) custom_color = tty_ctx.theme.warning;
+        if (strcmp(fmt_specifer_buf, "success")) custom_color = tty_ctx.theme.success;
+        if (strcmp(fmt_specifer_buf, "info")) custom_color = tty_ctx.theme.info;
+        if (strcmp(fmt_specifer_buf, "accent")) custom_color = tty_ctx.theme.accent;
+        format++;
+        current = NOTHING;
+        memset(fmt_specifer_buf, 0, 13);
+        
     }
     return 1;
 }

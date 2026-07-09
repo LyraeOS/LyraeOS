@@ -48,12 +48,11 @@ void command_handler(char *buf) {
 }
 void shell_loop()
 {
-    TTYTheme* cur_theme = tty_cur_theme();
     keyboard_pop(&keypress_queue);
-    kprintf("Welcome to {o}LyraeOS{r}!\n", cur_theme->accent);
-    kprintf("Type {o}commands{r} for a list of commands.\n", cur_theme->accent);
-    kprintf("And {o}help{r} for the list with descriptions.\n", cur_theme->accent);
-    kprintf("{o}kernel@lyraeos{r} $ ", cur_theme->accent);
+    kprintf("Welcome to {accent}LyraeOS{reset}!\n");
+    kprintf("Type {accent}commands{reset} for a list of commands.\n");
+    kprintf("And {accent}help{reset} for the list with descriptions.\n");
+    kprintf("{accent}kernel@lyraeos{reset} $ ");
     char command_buf[50] = {0};
     for (;;)
     {
@@ -61,7 +60,7 @@ void shell_loop()
         if (c == '\n') {
             kputchar('\n');
             command_handler(command_buf);
-            kprintf("{o}kernel@lyraeos{r} $ ", cur_theme->accent);
+            kprintf("{accent}kernel@lyraeos{reset} $ ");
             memset(command_buf, 0, 50);
         } else if (c == '\x08') {
             if (kstrlen(command_buf) > 0) {

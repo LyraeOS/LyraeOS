@@ -47,12 +47,13 @@ void kmain(void) {
     if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
         hlt_loop();
     }
-    init_serial();
     fpu_init();
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
     LOG_INFO("Booting LyraeOS!");
+    LOG_INFO("Serial init");
+    init_serial();
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
         panic("No memory map :(");
