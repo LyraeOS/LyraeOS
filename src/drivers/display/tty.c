@@ -361,7 +361,7 @@ TTYTheme *tty_cur_theme() {
     return &tty_ctx.theme;
 }
 
-char* tty_read_line(char* input_buf) {
+void tty_read_line(char* input_buf) {
     char c;
     do {
         c = wait_for_key();
@@ -377,7 +377,6 @@ char* tty_read_line(char* input_buf) {
     } while (c != '\n');
 
     kputchar('\n');
-    return input_buf;
 }
 
 COMMAND(clear, "clears the screen") {

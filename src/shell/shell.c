@@ -56,8 +56,8 @@ void shell_loop()
 
     for (;;) {
         kprintf("{accent}kernel@lyraeos{reset} $ ");
-        char* command = tty_read_line(command_buf);
-        command_handler(command);
+        tty_read_line(command_buf);
+        command_handler(command_buf);
         memset(command_buf, 0, 129);
     }
 }
