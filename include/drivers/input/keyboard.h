@@ -7,9 +7,9 @@
 
 
 typedef enum {
-    NONE,
-    SHIFT,
-} KeyboardModifer;
+    KEYBOARD_MODIFIER_NONE,
+    KEYBOARD_MODIFIER_SHIFT,
+} KeyboardModifier;
 
 #define QCAP 100
 
@@ -18,12 +18,11 @@ struct KeyboardQueue {
     int back;
     int front;
 };
-extern struct KeyboardQueue keypress_queue;
-void keyboard_init(struct KeyboardQueue *q);
-int keyboard_empty(struct KeyboardQueue *q);
-int keyboard_full(struct KeyboardQueue *q);
-void keyboard_push(struct KeyboardQueue *q, char c);
-char keyboard_pop(struct KeyboardQueue *q);
+void keyboard_init();
+int keyboard_empty();
+int keyboard_full();
+void keyboard_push(char c);
+char keyboard_pop();
 void keyboard_interrupt_handler();
-char wait_for_key(struct KeyboardQueue *q);
+char wait_for_key();
 #endif

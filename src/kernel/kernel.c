@@ -82,7 +82,7 @@ void kmain(void) {
     LOG_INFO("Init GDT");
     gdt_install();
     LOG_INFO("Init keyboard");
-    keyboard_init(&keypress_queue);
+    /* keyboard_init(&keypress_queue); */
     LOG_INFO("Init IDT");
     idt_install();
     LOG_DEBUG("Probing pci bus...");

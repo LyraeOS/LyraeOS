@@ -183,14 +183,14 @@ void minesweeperMain(void) {
     while (temp == 1 && amountClicked < amountNeeded) {
         mouse_state_t* state = {0};
         state = mouse_get_state(); 
-        while (!state->left_click && !state->right_click && keyboard_empty(&keypress_queue)) {
+        while (!state->left_click && !state->right_click && keyboard_empty()) {
             xc = state->x / RECTX;
             yc = state->y / RECTY;
             state = mouse_get_state();
         }
         char pressed = '\0';
-        if (!keyboard_empty(&keypress_queue))
-            pressed = keyboard_pop(&keypress_queue);
+        if (!keyboard_empty())
+            pressed = keyboard_pop();
         if (state->left_click) {
             temp = click(xc, yc);
         } else if (state->right_click) {

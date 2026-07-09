@@ -57,9 +57,9 @@ void ConwaysMain(int cell_size)
     uint8_t temp[(grid_x * grid_y + 7) / 8];
     while (true)
     {
-        if (!keyboard_empty(&keypress_queue))
+        if (!keyboard_empty())
         {
-            if (keyboard_pop(&keypress_queue) == 'q')
+            if (keyboard_pop() == 'q')
                 return;
         }
         // size_t start = timer_ticks;

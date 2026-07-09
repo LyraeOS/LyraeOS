@@ -79,4 +79,6 @@ void tty_update_cursor();
 void tty_set_cursor_enabled(bool enabled);
 void tty_change_theme(TTYTheme theme);
 TTYTheme* tty_cur_theme();
+char* tty_read_line(char* input_buf);
+
 #endif

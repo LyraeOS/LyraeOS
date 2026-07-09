@@ -361,6 +361,25 @@ TTYTheme *tty_cur_theme() {
     return &tty_ctx.theme;
 }
 
+char* tty_read_line(char* input_buf) {
+    char c;
+    do {
+        c = wait_for_key();
+        if (c == '\x08') {
+            if (kstrlen(input_buf) > 0) {
+                input_buf[kstrlen(input_buf) - 1] = '\0';
+                tty_backspace();
+            }
+        } else if (c != '\n') {
+            charcat(input_buf, c);
+            kputchar(c);
+        }
+    } while (c != '\n');
+
+    kputchar('\n');
+    return input_buf;
+}
+
 COMMAND(clear, "clears the screen") {
     tty_clear();
     return 0;

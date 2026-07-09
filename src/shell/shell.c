@@ -48,29 +48,17 @@ void command_handler(char *buf) {
 }
 void shell_loop()
 {
-    keyboard_pop(&keypress_queue);
+    keyboard_pop();
     kprintf("Welcome to {accent}LyraeOS{reset}!\n");
     kprintf("Type {accent}commands{reset} for a list of commands.\n");
     kprintf("And {accent}help{reset} for the list with descriptions.\n");
-    kprintf("{accent}kernel@lyraeos{reset} $ ");
-    char command_buf[50] = {0};
-    for (;;)
-    {
-        char c = wait_for_key(&keypress_queue);
-        if (c == '\n') {
-            kputchar('\n');
-            command_handler(command_buf);
-            kprintf("{accent}kernel@lyraeos{reset} $ ");
-            memset(command_buf, 0, 50);
-        } else if (c == '\x08') {
-            if (kstrlen(command_buf) > 0) {
-                command_buf[kstrlen(command_buf) - 1] = '\0';
-                tty_backspace();
-            }
-        } else {
-            charcat(command_buf, c);
-            kputchar(c);
-        }
+    char command_buf[129] = {0};
+
+    for (;;) {
+        kprintf("{accent}kernel@lyraeos{reset} $ ");
+        char* command = tty_read_line(command_buf);
+        command_handler(command);
+        memset(command_buf, 0, 129);
     }
 }
 

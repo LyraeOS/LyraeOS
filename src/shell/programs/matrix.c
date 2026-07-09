@@ -4,9 +4,9 @@
 void matrix() {
     TTYTheme* cur = tty_cur_theme();
     while (true) {
-        if (!keyboard_empty(&keypress_queue))
+        if (!keyboard_empty())
         {
-            if (keyboard_pop(&keypress_queue) == 'q')
+            if (keyboard_pop() == 'q')
                 return;
         }
         ScreenSize sc = tty_get_screen_size();

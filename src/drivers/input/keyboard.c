@@ -15,59 +15,66 @@ char keyboard_shift[] = {
 	'*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '7', '8', '9',
 	'-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
 };
-void keyboard_init(struct KeyboardQueue *q) {
-    q->front = -1;
-    q->back = 0;
-}
-int keyboard_empty(struct KeyboardQueue *q) {
-    return q->front == q->back;
+
+struct KeyboardQueue keypress_queue = {
+    .front = -1,
+    .back = 0,
+    .items = {0},
+};
+KeyboardModifier state = KEYBOARD_MODIFIER_NONE;
+
+/* void keyboard_init() { */
+/*     q->front = -1; */
+/*     q->back = 0; */
+/* } */
+int keyboard_empty() {
+    return keypress_queue.front == keypress_queue.back;
 }
 
-int keyboard_full(struct KeyboardQueue *q) {
-    return (q->back + 1) % QCAP == q->front;
+int keyboard_full() {
+    return (keypress_queue.back + 1) % QCAP == keypress_queue.front;
 }
 
-void keyboard_push(struct KeyboardQueue *q, char c) {
-    if (keyboard_full(q)) {
+void keyboard_push(char c) {
+    if (keyboard_full()) {
         return; // queue full, drop input or handle error
     }
-    q->items[q->back] = c;
-    q->back = (q->back + 1) % QCAP;
+    keypress_queue.items[keypress_queue.back] = c;
+    keypress_queue.back = (keypress_queue.back + 1) % QCAP;
 }
 
-char keyboard_pop(struct KeyboardQueue *q) {
-    if (keyboard_empty(q)) {
+char keyboard_pop() {
+    if (keyboard_empty()) {
         return 0; // or some error value
     }
-    char value = q->items[q->front];
-    q->front = (q->front + 1) % QCAP;
+    char value = keypress_queue.items[keypress_queue.front];
+    keypress_queue.front = (keypress_queue.front + 1) % QCAP;
     return value;
 }
 
+bool keyboard_has_key();
 
-KeyboardModifer state = NONE;
-struct KeyboardQueue keypress_queue = {0};
 void keyboard_interrupt_handler() {
     uint8_t scancode = inb(0x60);
     if (scancode & 0x80) {
         if (scancode == 0xAA) {
-            state = NONE;
+            state = KEYBOARD_MODIFIER_NONE;
         }
     } else {
         if (scancode == 0x2A) {
-            state = SHIFT;
+            state = KEYBOARD_MODIFIER_SHIFT;
         } else {
             if (keyboard[scancode] != 0)
-                keyboard_push(&keypress_queue, state == SHIFT ? keyboard_shift[scancode] : keyboard[scancode]);
+                keyboard_push(state == KEYBOARD_MODIFIER_SHIFT ? keyboard_shift[scancode] : keyboard[scancode]);
         }
          
     }
     pic_send_eoi(33);
 }
-char wait_for_key(struct KeyboardQueue *q) {
+char wait_for_key() {
     for (;;){
-        if (!keyboard_empty(q)) {
-            return keyboard_pop(q);
+        if (!keyboard_empty()) {
+            return keyboard_pop();
         }
         tty_update_cursor();
         asm("hlt");
