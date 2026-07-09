@@ -2,6 +2,8 @@
 #include <mm/kheap.h>
 #include <drivers/display/tty.h>
 #include <kernel/command.h>
+#include <kernel/logging.h>
+#include <lib/util.h>
 
 pci_device_t* pci_devices = 0;
 size_t pci_device_count = 0;
@@ -86,6 +88,12 @@ void pci_probe() {
               pci_device_t device = pci_get_device(location);
               if (device.vendor != 0) {
                   pci_add_device(device);
+                  pci_class_info_t info = pci_get_class_info(location);
+                  const char* name = pci_class_name(&info);
+                  LOG_DEBUG("device found: {s}", name);
+
+                  UNUSED(name);
+                  UNUSED(info);
               }
             }
         }

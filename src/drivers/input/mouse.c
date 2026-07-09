@@ -76,11 +76,6 @@ void mouse_handler() {
         int dx = (int)(char)mouse_state.packet[1];
         int dy = (int)(char)mouse_state.packet[2];
 
-        int px = mouse_state.x;
-        int py = mouse_state.y;
-        if (mouse_state.enabled) mouse_clear_trail(px, py); 
-
-
         mouse_state.x += dx;
         mouse_state.y -= dy;
 
@@ -90,11 +85,6 @@ void mouse_handler() {
         // yes, i know its spaghetti, ill fix it later
         mouse_state.x = (mouse_state.x < 0) ? 0 : ((mouse_state.x > (int)ss.x - CURSOR_WIDTH - 1) ? (int)ss.x - CURSOR_WIDTH - 1 : mouse_state.x);
         mouse_state.y = (mouse_state.y < 0) ? 0 : ((mouse_state.y > (int)ss.y - CURSOR_HEIGHT - 1) ? (int)ss.y - CURSOR_HEIGHT - 1 : mouse_state.y);
-
-        if (mouse_state.enabled) {
-            mouse_save_position();
-            mouse_draw(0xffffff);
-        }
     }
     pic_send_eoi(44);
 }
@@ -123,9 +113,3 @@ mouse_state_t* mouse_get_state() {
     return &mouse_state;
 };
 
-COMMAND(cur, "enables the mouse cursor") {
-    mouse_state_t* state = mouse_get_state();
-    mouse_set_enable(!state->enabled);
-    tty_clear();
-    return 0;
-}

@@ -112,12 +112,17 @@ bin/$(OUTPUT).iso: limine-binary/limine bin/$(OUTPUT)
 .PHONY: run-bios
 run-bios: bin/$(OUTPUT).iso
 	qemu-system-x86_64 $(QEMUFLAGS)
+
 .PHONY: run-efi
 run-efi: edk2-ovmf-bins bin/$(OUTPUT).iso
 	qemu-system-x86_64 \
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=edk2-ovmf-bins/ovmf-code-x86_64.fd,readonly=on \
 		$(QEMUFLAGS)
+
+
+debug: CFLAGS += -DDEBUG
+debug: run-efi
 
 # PLEASE DO NOT RUN UNLESS YOU CHECK YOUR SDB
 usb: bin/$(OUTPUT).iso

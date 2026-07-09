@@ -73,14 +73,17 @@ int atoi(const char *s) {
   return num;
 }
 
-void panic(const char* message) {
-  tty_set_cursor_enabled(false);
-  tty_change_theme(LYRAE_PANIC);
-  kprintf("{o}KERNEL PANIC\nReason: {s}{r}", tty_cur_theme()->error, message);
-  asm volatile ("cli");
-  hlt_loop();
+void panic(const char* message, ...) {
+    va_list args;
+    va_start(args, message);
+    tty_set_cursor_enabled(false);
+    tty_change_theme(LYRAE_PANIC);
+    kprintf("[{o}ERROR{r}] KERNEL PANIC: ", LYRAE_PANIC.error);
+    vkprintf(message, args);
+    va_end(args);
+    asm volatile ("cli");
+    hlt_loop();
 }
-void assert(bool condition, const char* message) { if (!condition) panic(message); }
 
 int sum(int* array, int size) { //(int)(sizeof(array) / sizeof(array[0]))
     int acc = 0;

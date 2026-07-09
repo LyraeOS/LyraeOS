@@ -10,7 +10,7 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <lib/limine.h>
-#include <lib/util.h>
+#include <kernel/logging.h>
 #include <cpu/gdt.h>
 #include <cpu/idt.h>
 #include <kernel/serial.h>
@@ -52,8 +52,7 @@ void kmain(void) {
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
-    kprintf("Booting LyraeOS!\n");
-    const TTYTheme* cur = tty_cur_theme();
+    LOG_INFO("Booting LyraeOS!");
     const struct limine_memmap_response *mem_resp = memmap_request.response;
     if (mem_resp == NULL) {
         panic("No memory map :(");
@@ -74,27 +73,21 @@ void kmain(void) {
 	    friendly_name = "UNKNOWN";
 	    break;
     }
-    kprintf("[{o}FW{r}] => firmware type is {s}\n", cur->info, friendly_name);
+    LOG_INFO("firmware type is {s}", friendly_name);
     pmm_init(mem_resp);
     vmm_init();
     kheap_init(0xFFFF900000000000, 4);
 
-    int* b = kmalloc(sizeof(int)*4);
-    b[0] = 1;
-    b[1] = 2;
-    b[2] = 3;
-    b[3] = 4;
-    kfree(b);
-
+    LOG_INFO("Init GDT");
     gdt_install();
-    kprintf("[{o}GDT{r}] => Init GDT\n", cur->info);
+    LOG_INFO("Init keyboard");
     keyboard_init(&keypress_queue);
-    kprintf("[{o}IDT{r}] => Init IDT\n", cur->info);
+    LOG_INFO("Init IDT");
     idt_install();
-    kprintf("[{o}PCI{r}] => probing pci bus...\n", cur->info);
+    LOG_DEBUG("Probing pci bus...");
     pci_init();
 
     shell_loop();
-    kprintf("OS Functions Complete, Halting...\n");
+    LOG_WARNING("OS Functions Complete, Halting...\n");
     hlt_loop();
 }

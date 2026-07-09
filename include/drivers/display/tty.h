@@ -65,7 +65,10 @@ struct GfxCtx;
 bool init_tty(struct GfxCtx gfx_ctx);
 void kputchar(char c);
 void tty_scroll(size_t line);
+
 int kprintf(const char* restrict format, ...);
+int vkprintf(const char* restrict format, va_list args);
+
 void tty_clear();
 void tty_backspace();
 ScreenSize tty_get_screen_size();

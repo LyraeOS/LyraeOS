@@ -4,6 +4,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
+
+
+#define UNUSED(x) ((void)(x))
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 void hlt_loop(void);
 size_t kstrlen(const char* str);
@@ -18,8 +24,7 @@ void charcat(char *s, char c);
 bool strcmp(const char *s1, const char *s2);
 void wait_ms(uint64_t ms);
 int atoi(const char *s);
-void panic(const char* message);
-void assert(bool condition, const char* message);
+void panic(const char* message, ...);
 int sum(int* array, int size);
 float fsum(float* array, int size);
 int min(int a, int b);

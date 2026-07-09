@@ -1,6 +1,7 @@
 #include <mm/pmm.h>
 #include <mm/mem.h>
 #include <drivers/display/tty.h>
+#include <kernel/logging.h>
 
 
 static size_t highest_page_top = 0;
@@ -33,8 +34,8 @@ void pmm_init(const struct limine_memmap_response *memmap) {
         if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
         if (current_entry->base == 0) continue;
         if (current_entry->length >= pmm_bitmap.size) {
-            kprintf("found big enough entry of size {u}\n", current_entry->length);
-            kprintf("pmm bitmap stored between {X} and {X}\n", current_entry->base, current_entry->base + current_entry->length - 1);
+            LOG_DEBUG("found big enough entry of size {u}", current_entry->length);
+            LOG_DEBUG("pmm bitmap stored between {X} and {X}", current_entry->base, current_entry->base + current_entry->length - 1);
             pmm_bitmap.map = (uint64_t *)PHYS_TO_VIRT(current_entry->base);
             current_entry->base += pmm_bitmap.size;
             current_entry->length -= pmm_bitmap.size;
@@ -44,7 +45,6 @@ void pmm_init(const struct limine_memmap_response *memmap) {
     }
     memset((void*)pmm_bitmap.map, 0xFF, pmm_bitmap.size);
 
-    // 2. Open up all usable memory lanes
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         current_entry = memmap->entries[i];
         if (current_entry->type != LIMINE_MEMMAP_USABLE && current_entry->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
@@ -58,16 +58,8 @@ void pmm_init(const struct limine_memmap_response *memmap) {
         }
     }
 
-    // 3. CRITICAL: Re-lock dangerous legacy low memory zones (0x0 to 1MiB)
-    // This stops pmm_alloc from ever handing out 0xA0000
-    uint64_t low_mem_pages = 0x100000 / PAGE_SIZE;
-    for (size_t i = 0; i < low_mem_pages; i++) {
-        bitmap_set_bit(&pmm_bitmap, i);
-    }
-
     uintptr_t map_virtual_addr = (uintptr_t)pmm_bitmap.map;
 
-    // Manually subtract the offset to avoid macro expansion quirks
     uint64_t bitmap_phys_base = map_virtual_addr - hhdm_base;
 
     size_t bitmap_page_count = pmm_bitmap.size / PAGE_SIZE;

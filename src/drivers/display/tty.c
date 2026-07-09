@@ -94,6 +94,14 @@ typedef enum {
 int kprintf(const char *restrict format, ...) {
     va_list params;
     va_start(params, format);
+
+    int ret = vkprintf(format, params);
+
+    va_end(params);
+    return ret;
+}
+
+int vkprintf(const char *format, va_list args) {
     FormatMode current = NOTHING;
     while (*format != '\0') {
         char cur = format[0];
@@ -112,16 +120,16 @@ int kprintf(const char *restrict format, ...) {
             format++;
         } else {
             if (cur == 's') {
-                const char *str = va_arg(params, const char *);
+                const char *str = va_arg(args, const char *);
                 size_t len = kstrlen(str);
                 kprint(str, len);
             }
             if (cur == 'c') {
-                char c = (char) va_arg(params, int);
+                char c = (char) va_arg(args, int);
                 kprint(&c, sizeof(c));
             }
             if (cur == 'd') {
-                int64_t num = va_arg(params, int64_t);
+                int64_t num = va_arg(args, int64_t);
                 char buf[12];
                 int s = num;
                 int i = 0;
@@ -147,7 +155,7 @@ int kprintf(const char *restrict format, ...) {
                 kprint((const char *) buf, kstrlen(buf));
             }
             if (cur == 'x') {
-                size_t num = va_arg(params, size_t);
+                size_t num = va_arg(args, size_t);
                 char *nums = "0123456789ABCDEF";
                 char buf[17];
                 int i = 0;
@@ -167,7 +175,7 @@ int kprintf(const char *restrict format, ...) {
                 kprint((const char *) buf, kstrlen(buf));
             }
 	        if (cur == 'X') {
-		        size_t num = va_arg(params,size_t);
+		        size_t num = va_arg(args,size_t);
 		        static const char nums[] = "0123456789ABCDEF";
 		        char buf[17];
 		        for (size_t i = 0; i < sizeof(num)*2; i++) {
@@ -179,7 +187,7 @@ int kprintf(const char *restrict format, ...) {
 		        kprint(buf, 16);
 	            }
 	            if (cur == 'b') {
-		        size_t num = va_arg(params,size_t);
+		        size_t num = va_arg(args,size_t);
 		        char buf[65];
 		        for (int i = 63; i >= 0; i--) {
 		          buf[63 - i] = num & (1ULL << i) ? '1' : '0';
@@ -188,7 +196,7 @@ int kprintf(const char *restrict format, ...) {
 		        kprint(buf, 65);
 	        }
             if (cur == 'u') {
-                size_t num = va_arg(params, size_t);
+                size_t num = va_arg(args, size_t);
                 char buf[17];
                 int i = 0;
                 if (num == 0) {
@@ -207,7 +215,7 @@ int kprintf(const char *restrict format, ...) {
                 kprint((const char *) buf, kstrlen(buf));
             }
             if (cur == 'f') {
-                double num = va_arg(params, double);
+                double num = va_arg(args, double);
                 char buf[32];
                 int i = 0;
                 if (num < 0) {
@@ -245,7 +253,7 @@ int kprintf(const char *restrict format, ...) {
             }
             // temporary code to set color
             if (cur == 'o') {
-                custom_color = va_arg(params, uint32_t);
+                custom_color = va_arg(args, uint32_t);
             }
             format++;
         }

@@ -1,5 +1,6 @@
 #include <drivers/display/gfx.h>
 #include <kernel/command.h>
+#include <lib/util.h>
 // based on gnu unifonts
 uint8_t glyphs[97][FONT_WIDTH*FONT_HEIGHT] = {
   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -305,7 +306,7 @@ void gfx_draw_triangle_filled(vec2 p1, vec2 p2, vec2 p3, uint32_t c) {
         generate_line_descriptor(p2, p3),
         generate_line_descriptor(p3, p1),
     };
-    int descriptors_length = sizeof(descriptors) / sizeof(line_descriptor_t);
+    int descriptors_length = ARRAY_SIZE(descriptors);
     vec2 bounds[2] = {
         vec2_new(min(p1.x, min(p2.x, p3.x)), min(p1.y, min(p2.y, p3.y))),
         vec2_new(max(p1.x, max(p2.x, p3.x)), max(p1.y, max(p2.y, p3.y))),
