@@ -49,3 +49,11 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 
   return 0;
 }
+
+void print_memory_status(void) {
+    size_t free_phys = pmm_get_free_memory();
+    size_t free_heap = kheap_get_free_bytes();
+    
+    LOG_INFO("Free Physical RAM: {d} MB", free_phys / (1024 * 1024));
+    LOG_INFO("Current Free Heap Space: {d} KB", free_heap / 1024);
+}

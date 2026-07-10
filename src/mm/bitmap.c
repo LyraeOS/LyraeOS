@@ -8,5 +8,5 @@ void bitmap_set_bit(bitmap_t *bitmap, size_t bit) {
 }
 
 void bitmap_unset_bit(bitmap_t *bitmap, size_t bit) {
-    bitmap->map[bit / 64] &= ~(1 << (bit % 64));
+    bitmap->map[bit / 64] &= ~(1ULL << (bit % 64));
 }

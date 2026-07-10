@@ -2,15 +2,17 @@
 #include <mm/vmm.h>
 #include <mm/pmm.h>
 #include <mm/mem.h>
+#include <kernel/logging.h>
 
 static heap_block_t* heap_start = NULL;
 static uintptr_t heap_end = 0;
 static uintptr_t heap_max = 0;
 
 static bool heap_expand(size_t pages) {
-    uintptr_t current_pml4_phys;
-    asm volatile("mov %%cr3, %0" : "=r"(current_pml4_phys));
-    page_directory_t* active_pml4 = (page_directory_t*)PHYS_TO_VIRT(current_pml4_phys);
+    LOG_DEBUG("expanding heap by {u} pages", pages);
+    page_directory_t* active_pml4 = kernel_pml4;
+
+    uintptr_t new_block_addr = heap_end;
 
     for (size_t i = 0; i < pages; i++) {
         if (heap_end >= heap_max) return false;
@@ -22,8 +24,33 @@ static bool heap_expand(size_t pages) {
             pmm_free(phys, 1);
             return false;
         }
+        volatile uint8_t* canary = (volatile uint8_t*)new_block_addr;
+        if (i == 0) {
+            *canary = 0xAA; // write canary right after page 0 is mapped
+        } else {
+            if (*canary != 0xAA) {
+                LOG_DEBUG("canary at {X} corrupted after iteration {d}! value={x}",
+                        (uint64_t)new_block_addr, i, *canary);
+            }
+        }
+        /* LOG_DEBUG("allocated page {d} / {d}", i, pages); */
         heap_end += PAGE_SIZE;
+        /* LOG_DEBUG("new heap end: {X}", (uint64_t) heap_end); */
+        print_memory_status();
     }
+
+    heap_block_t* new_block = (heap_block_t*)new_block_addr;
+    new_block->size = (pages * PAGE_SIZE) - sizeof(heap_block_t);
+
+    new_block->is_free = true;
+    new_block->next = NULL;
+
+    heap_block_t* current = heap_start;
+    while (current->next != NULL) {
+        current = current->next;
+    }
+    current->next = new_block;
+
     return true;
 }
 
@@ -90,4 +117,24 @@ void kfree(void* ptr) {
         }
         current = current->next;
     }
+}
+size_t kheap_get_free_bytes(void) {
+    size_t free_bytes = 0;
+    heap_block_t* current = heap_start;
+
+    while (current != NULL) {
+        if (current->is_free) {
+            free_bytes += current->size;
+        }
+        current = current->next;
+    }
+
+    return free_bytes;
+}
+
+size_t kheap_get_unallocated_bytes(void) {
+    if (heap_max >= heap_end) {
+        return heap_max - heap_end;
+    }
+    return 0;
 }

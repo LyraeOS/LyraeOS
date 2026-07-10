@@ -3,8 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct
-{
+typedef struct {
     uint64_t *map;
     size_t	 size;
 } bitmap_t;

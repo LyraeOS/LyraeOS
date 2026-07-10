@@ -16,6 +16,9 @@
 
 typedef uint64_t page_directory_t;
 
+extern page_directory_t* kernel_pml4;
+extern uintptr_t kernel_pml4_phys;
+
 void vmm_init(void);
 page_directory_t* vmm_create_address_space(void);
 bool vmm_map(page_directory_t* pml4, uintptr_t virt, uintptr_t phys, uint64_t flags);

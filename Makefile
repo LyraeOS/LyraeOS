@@ -14,7 +14,8 @@ QEMUFLAGS := \
 		-cdrom bin/$(OUTPUT).iso \
 		-m 8G \
 		-serial stdio \
-		-usb -device usb-tablet
+		-usb -device usb-tablet \
+		-S -s
 
 override CC_IS_CLANG := $(shell ! $(CC) --version 2>/dev/null | grep -q '^Target: '; echo $$?)
 

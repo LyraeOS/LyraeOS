@@ -1,7 +1,6 @@
 #include <mm/pmm.h>
 #include <mm/mem.h>
 #include <drivers/display/tty.h>
-#include <kernel/logging.h>
 
 
 static size_t highest_page_top = 0;
@@ -21,7 +20,7 @@ void pmm_init(const struct limine_memmap_response *memmap) {
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         current_entry = memmap->entries[i];
 
-        if (current_entry->type != LIMINE_MEMMAP_USABLE && current_entry->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
+        if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
         current_page_top = current_entry->base + current_entry->length;
         if (current_page_top > highest_page_top)
             highest_page_top = current_page_top;
@@ -34,8 +33,6 @@ void pmm_init(const struct limine_memmap_response *memmap) {
         if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
         if (current_entry->base == 0) continue;
         if (current_entry->length >= pmm_bitmap.size) {
-            LOG_DEBUG("found big enough entry of size {u}", current_entry->length);
-            LOG_DEBUG("pmm bitmap stored between {X} and {X}", current_entry->base, current_entry->base + current_entry->length - 1);
             pmm_bitmap.map = (uint64_t *)PHYS_TO_VIRT(current_entry->base);
             current_entry->base += pmm_bitmap.size;
             current_entry->length -= pmm_bitmap.size;
@@ -47,7 +44,7 @@ void pmm_init(const struct limine_memmap_response *memmap) {
 
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         current_entry = memmap->entries[i];
-        if (current_entry->type != LIMINE_MEMMAP_USABLE && current_entry->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
+        if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
 
         uint64_t aligned_base = ALIGN_UP(current_entry->base, PAGE_SIZE);
         uint64_t aligned_end = ALIGN_DOWN(current_entry->base + current_entry->length, PAGE_SIZE);
@@ -57,6 +54,11 @@ void pmm_init(const struct limine_memmap_response *memmap) {
             pmm_free((void*)aligned_base, pages);
         }
     }
+    uint64_t low_mem_pages = 0x100000 / PAGE_SIZE;
+    for (size_t i = 0; i < low_mem_pages; i++) {
+        bitmap_set_bit(&pmm_bitmap, i);
+    }
+
 
     uintptr_t map_virtual_addr = (uintptr_t)pmm_bitmap.map;
 
@@ -112,4 +114,14 @@ void* pmm_find_free_run(size_t page_count) {
         }
     }
     return NULL;
+}
+size_t pmm_get_free_memory(void) {
+    size_t total_pages = KB_TO_PAGES(highest_page_top);
+    
+    if (used_pages_count >= total_pages) {
+        return 0;
+    }
+    
+    size_t free_pages = total_pages - used_pages_count;
+    return free_pages * PAGE_SIZE; // Returns free memory in bytes
 }

@@ -2,7 +2,8 @@
 #include <mm/pmm.h>
 #include <mm/mem.h>
 
-static page_directory_t* kernel_pml4 = NULL;
+page_directory_t* kernel_pml4 = NULL;
+uintptr_t kernel_pml4_phys = 0;
 
 static page_directory_t* get_next_level(page_directory_t* current_level, size_t index, bool allocate) {
     uint64_t entry = current_level[index];
@@ -68,11 +69,12 @@ page_directory_t* vmm_create_address_space(void) {
         new_pml4_virt[i] = current_pml4[i];
     }
 
-    return new_pml4_phys;
+    return new_pml4_virt;
 }
 
-void vmm_switch_address_space(page_directory_t* pml4_phys) {
-    asm volatile("mov %0, %%cr3" :: "r"(pml4_phys) : "memory");
+void vmm_switch_address_space(page_directory_t* pml4_virt) {
+    uintptr_t phys = VIRT_TO_PHYS((uintptr_t)pml4_virt);
+    asm volatile("mov %0, %%cr3" :: "r"(phys) : "memory");
 }
 
 void vmm_init(void) {

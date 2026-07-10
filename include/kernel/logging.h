@@ -1,5 +1,6 @@
 #ifndef LYRAEOS_LOGGING_H
 #define LYRAEOS_LOGGING_H
+#include <drivers/display/tty.h>
 
 #define LOG_INFO(fmt, ...) \
     (kprintf("[{info}INFO{reset}] ({s}:{d}) " fmt "\n", __FILE_NAME__, __LINE__, ##__VA_ARGS__))

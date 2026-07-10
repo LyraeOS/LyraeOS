@@ -16,4 +16,6 @@ void pmm_free(void* addr, size_t page_count);
 
 void* pmm_find_free_run(size_t page_count);
 
+size_t pmm_get_free_memory(void);
+
 #endif //LYRAEOS_PMM_H

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <drivers/display/gfx.h>
 #include <drivers/display/tty.h>
+#include <drivers/display/compositor/surface.h>
 #include <drivers/input/keyboard.h>
 #include <drivers/pci/pci.h>
 #include <mm/mem.h>
@@ -48,16 +49,16 @@ void kmain(void) {
         hlt_loop();
     }
     fpu_init();
+    const struct limine_memmap_response *mem_resp = memmap_request.response;
+    if (mem_resp == NULL) {
+        hlt_loop();
+    }
+    init_serial();
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
     LOG_INFO("Booting LyraeOS!");
     LOG_INFO("Serial init");
-    init_serial();
-    const struct limine_memmap_response *mem_resp = memmap_request.response;
-    if (mem_resp == NULL) {
-        panic("No memory map :(");
-    }
     const struct limine_firmware_type_response *fw_type_resp = fw_type_request.response;
     char* friendly_name;
     switch (fw_type_resp->firmware_type) {
@@ -75,20 +76,26 @@ void kmain(void) {
 	    break;
     }
     LOG_INFO("firmware type is {s}", friendly_name);
+    LOG_INFO("initializing memory");
+
     pmm_init(mem_resp);
     vmm_init();
     kheap_init(0xFFFF900000000000, 4);
+    LOG_DEBUG("kheap init");
 
     LOG_INFO("Init GDT");
     gdt_install();
-    LOG_INFO("Init keyboard");
-    /* keyboard_init(&keypress_queue); */
     LOG_INFO("Init IDT");
     idt_install();
     LOG_DEBUG("Probing pci bus...");
     pci_init();
 
-    shell_loop();
+    ScreenSize ss = tty_get_screen_size();
+    surface_t test = surface_new(ss.x, ss.y);
+    test.buf[5] = 0;
+    kfree(test.buf);
+    
+    /* shell_loop(); */
     LOG_WARNING("OS Functions Complete, Halting...\n");
     hlt_loop();
 }

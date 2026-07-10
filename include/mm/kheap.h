@@ -14,6 +14,9 @@ typedef struct heap_block {
 void kheap_init(uintptr_t start_addr, size_t initial_pages);
 void* kmalloc(size_t size);
 void kfree(void* ptr);
-void kheap_visualize(int start_x, int start_y, int max_width, int line_height);
+
+size_t kheap_get_free_bytes(void);
+
+size_t kheap_get_unallocated_bytes(void);
 
 #endif // LYRAEOS_KHEAP_H

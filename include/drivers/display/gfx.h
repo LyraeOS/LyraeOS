@@ -7,21 +7,24 @@
 #include <stdint.h>
 #include <lib/util.h>
 #include <drivers/display/tty.h>
+#include <drivers/display/compositor/surface.h>
 
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 16
 
 typedef struct {
-  int factor;
-  int width, height;
+    int factor;
+    int width, height;
 } ScalingInfo;
 
 struct GfxCtx {
-  uint64_t width, height, bytePitch;
-  volatile uint32_t *fb_ptr;
-  struct limine_framebuffer *framebuffer;
-  uint32_t bg_color, fg_color;
-  ScalingInfo scaling_info;
+    uint64_t width, height, bytePitch;
+    volatile uint32_t *fb_ptr;
+    struct limine_framebuffer *framebuffer;
+    surface_t back_buf;
+
+    uint32_t bg_color, fg_color;
+    ScalingInfo scaling_info;
 };
 
 typedef struct {

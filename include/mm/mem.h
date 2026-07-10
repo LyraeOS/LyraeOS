@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <mm/kheap.h>
+#include <mm/pmm.h>
+#include <kernel/logging.h>
 #define ALIGN_DOWN(address, align)  ((address) & ~((align)-1))
 #define ALIGN_UP(address, align)    (((address) + (align)-1) & ~((align)-1))
 #define PAGE_SIZE 4096ULL
@@ -23,5 +26,6 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n);
 void *memset(void *s, int c, size_t n);
 void *memmove(void *dest, const void *src, size_t n);
 int memcmp(const void *s1, const void *s2, size_t n);
+void print_memory_status(void);
 
 #endif
