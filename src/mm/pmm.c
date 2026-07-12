@@ -1,6 +1,5 @@
 #include <mm/pmm.h>
 #include <mm/mem.h>
-#include <drivers/display/tty.h>
 #include <kernel/command.h>
 
 static size_t highest_page_top = 0;
@@ -72,9 +71,9 @@ void pmm_init(const struct limine_memmap_response *memmap) {
     }
 
     bitmap_set_bit(&pmm_bitmap, 0); // Null pointer guard
-    kprintf("highest_page_top = 0x{X}\n", highest_page_top);
-    kprintf("total_pages      = {u}\n", highest_page_top / PAGE_SIZE);
-    kprintf("used_pages_count = {u}\n", used_pages_count);
+    LOG_DEBUG("highest_page_top = 0x{X}", highest_page_top);
+    LOG_DEBUG("total_pages      = {u}", highest_page_top / PAGE_SIZE);
+    LOG_DEBUG("used_pages_count = {u}", used_pages_count);
 }
 void* pmm_alloc(size_t page_count) {
     if (used_pages_count <= 0) return NULL;
