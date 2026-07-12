@@ -1,7 +1,7 @@
 #include <mm/pmm.h>
 #include <mm/mem.h>
 #include <drivers/display/tty.h>
-
+#include <kernel/command.h>
 
 static size_t highest_page_top = 0;
 static size_t used_pages_count = 0;
@@ -20,17 +20,17 @@ void pmm_init(const struct limine_memmap_response *memmap) {
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         current_entry = memmap->entries[i];
 
-        if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
+        if (current_entry->type != LIMINE_MEMMAP_USABLE && current_entry->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
         current_page_top = current_entry->base + current_entry->length;
         if (current_page_top > highest_page_top)
             highest_page_top = current_page_top;
     }
-    used_pages_count = KB_TO_PAGES(highest_page_top);
+    used_pages_count = highest_page_top / PAGE_SIZE;
 
     pmm_bitmap.size = ALIGN_UP(ALIGN_DOWN(highest_page_top, PAGE_SIZE) / PAGE_SIZE / 8, PAGE_SIZE);
     for (uint64_t i = 0; i < memmap->entry_count; i++) {
         current_entry = memmap->entries[i];
-        if (current_entry->type != LIMINE_MEMMAP_USABLE) continue;
+        if (current_entry->type != LIMINE_MEMMAP_USABLE && current_entry->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) continue;
         if (current_entry->base == 0) continue;
         if (current_entry->length >= pmm_bitmap.size) {
             pmm_bitmap.map = (uint64_t *)PHYS_TO_VIRT(current_entry->base);
@@ -72,6 +72,9 @@ void pmm_init(const struct limine_memmap_response *memmap) {
     }
 
     bitmap_set_bit(&pmm_bitmap, 0); // Null pointer guard
+    kprintf("highest_page_top = 0x{X}\n", highest_page_top);
+    kprintf("total_pages      = {u}\n", highest_page_top / PAGE_SIZE);
+    kprintf("used_pages_count = {u}\n", used_pages_count);
 }
 void* pmm_alloc(size_t page_count) {
     if (used_pages_count <= 0) return NULL;
@@ -116,12 +119,24 @@ void* pmm_find_free_run(size_t page_count) {
     return NULL;
 }
 size_t pmm_get_free_memory(void) {
-    size_t total_pages = KB_TO_PAGES(highest_page_top);
+    size_t total_pages = highest_page_top / PAGE_SIZE;
     
     if (used_pages_count >= total_pages) {
         return 0;
     }
     
     size_t free_pages = total_pages - used_pages_count;
-    return free_pages * PAGE_SIZE; // Returns free memory in bytes
+    return free_pages;
+}
+
+static inline size_t pages_to_mb(size_t pages) {
+    return (pages * PAGE_SIZE) / 1024 / 1024;
+}
+
+COMMAND(mem, "gets memory information") {
+    // size_t free_pages = pmm_get_free_memory();
+    size_t total_pages = highest_page_top / PAGE_SIZE;
+    size_t used_pages = used_pages_count;
+    kprintf("({u}/{u}) MB => {f}%\n", pages_to_mb(used_pages), pages_to_mb(total_pages), ((float)used_pages) / ((float)total_pages) * 100);
+    return 0;
 }

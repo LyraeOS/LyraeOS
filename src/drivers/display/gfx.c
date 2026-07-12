@@ -122,7 +122,7 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_update_scale(1);
 
     init_tty(gfx_ctx);
-    /* gfx_ctx.back_buf = surface_new(gfx_ctx.width, gfx_ctx.height); */
+    gfx_ctx.back_buf = surface_new(gfx_ctx.width, gfx_ctx.height);
     return true;
 }
 

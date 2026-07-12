@@ -7,7 +7,8 @@
 #include <drivers/input/keyboard.h>
 #include <drivers/pci/pci.h>
 #include <mm/mem.h>
-#include <mm/kheap.h>
+#include <mm/liballoc.h>
+// #include <mm/kheap.h>
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <lib/limine.h>
@@ -79,9 +80,6 @@ void kmain(void) {
     LOG_INFO("initializing memory");
 
     pmm_init(mem_resp);
-    vmm_init();
-    kheap_init(0xFFFF900000000000, 4);
-    LOG_DEBUG("kheap init");
 
     LOG_INFO("Init GDT");
     gdt_install();
@@ -90,12 +88,14 @@ void kmain(void) {
     LOG_DEBUG("Probing pci bus...");
     pci_init();
 
-    ScreenSize ss = tty_get_screen_size();
-    surface_t test = surface_new(ss.x, ss.y);
-    test.buf[5] = 0;
-    kfree(test.buf);
+    LOG_DEBUG("Attempting allocation");
+    int* a = malloc(sizeof(int)*10);
+    a[0] = 1;
+    a[1] = 2;
+    free(a);
+    LOG_DEBUG("it worked :O");
     
-    /* shell_loop(); */
+    shell_loop();
     LOG_WARNING("OS Functions Complete, Halting...\n");
     hlt_loop();
 }

@@ -1,4 +1,4 @@
-#include <mm/kheap.h>
+#include <mm/liballoc.h>
 #include <mm/mem.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -13,7 +13,7 @@ surface_t surface_new(int w, int h) {
         .stride = w,
     };
     LOG_DEBUG("attempting to allocate buffer");
-    uint32_t* buf = (uint32_t* )kmalloc(w * h * sizeof(uint32_t));
+    uint32_t* buf = (uint32_t* )malloc(w * h * sizeof(uint32_t));
     LOG_DEBUG("please work :(");
     new.buf = buf;
     return new;

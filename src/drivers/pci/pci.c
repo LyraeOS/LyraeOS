@@ -1,5 +1,5 @@
 #include <drivers/pci/pci.h>
-#include <mm/kheap.h>
+#include <mm/liballoc.h>
 #include <drivers/display/tty.h>
 #include <kernel/command.h>
 #include <kernel/logging.h>
@@ -101,7 +101,7 @@ void pci_probe() {
 }
 
 void pci_init() {
-    pci_devices = (pci_device_t*) kmalloc(sizeof(pci_device_t) * 64);
+    pci_devices = (pci_device_t*) malloc(sizeof(pci_device_t) * 64);
     pci_probe();
 };
 static const pci_vendor_lookup_t pci_vendor_table[] = {
