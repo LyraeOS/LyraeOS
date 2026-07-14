@@ -339,7 +339,8 @@ void *malloc(size_t size)
 			{
 				struct boundary_tag *new_tag = split_tag( tag ); 
 
-				new_tag = new_tag;	// Get around the compiler warning about unused variables.
+                // new_tag = new_tag;	// Get around the compiler warning about unused variables.
+                (void)new_tag;
 	
 			}	
 		}

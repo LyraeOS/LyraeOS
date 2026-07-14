@@ -172,7 +172,8 @@ void minesweeperMain(void) {
 
         if (v % 3 == 0 && grid[xc][yc] == 0) {
             click(xc,yc);
-            xc = xc, yc = yc;
+            // clang hated this and idk why it was in here in the first place?
+            // xc = xc, yc = yc;
             clicked = true;
         }
     }
