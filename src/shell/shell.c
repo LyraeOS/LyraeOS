@@ -32,6 +32,7 @@ void command_handler(char *buf) {
     int argc = split_args(buf, argv);
     if (argc == 0)
         return;
+    // iterates through the commands made by the "COMMAND" macro
     const command_t *cmd = NULL;
     for (const command_t *c = __commands_start; c < __commands_end; c++) {
         if (strcmp(c->name, argv[0])) {
@@ -50,8 +51,7 @@ void shell_loop()
 {
     keyboard_pop();
     kprintf("Welcome to {accent}LyraeOS{reset}!\n");
-    kprintf("Type {accent}commands{reset} for a list of commands.\n");
-    kprintf("And {accent}help{reset} for the list with descriptions.\n");
+    kprintf("type {accent}help{reset} for the list of commands with descriptions.\n");
     char command_buf[129] = {0};
 
     for (;;) {
@@ -64,14 +64,7 @@ void shell_loop()
 
 COMMAND(help, "gets command help") {
     for (const command_t* c = __commands_start; c < __commands_end; c++) {
-        kprintf("{s} => {s}\n", c->name, c->description);
+        kprintf("{info}{s}{reset} => {accent}{s}{reset}\n", c->name, c->description);
     }
-    return 0;
-}
-COMMAND(commands, "lists all the commands") {
-    for (const command_t* c = __commands_start; c < __commands_end; c++) {
-        kprintf("{s} ", c->name);
-    }
-    kprintf("\ntype help for descriptions of the commands\n");
     return 0;
 }
