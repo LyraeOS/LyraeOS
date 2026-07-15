@@ -55,6 +55,7 @@ void kmain(void) {
         hlt_loop();
     }
     init_serial();
+    pmm_init(mem_resp);
     if (!init_gfx(framebuffer_request)) {
         hlt_loop();
     }
@@ -79,8 +80,6 @@ void kmain(void) {
     LOG_INFO("firmware type is {s}", friendly_name);
     LOG_INFO("initializing memory");
 
-    pmm_init(mem_resp);
-
     LOG_INFO("Init GDT");
     gdt_install();
     LOG_INFO("Init IDT");
@@ -88,12 +87,23 @@ void kmain(void) {
     LOG_DEBUG("Probing pci bus...");
     pci_init();
 
-    LOG_DEBUG("Attempting allocation");
-    int* a = malloc(sizeof(int)*10);
-    a[0] = 1;
-    a[1] = 2;
+    #ifdef DEBUG
+    LOG_DEBUG("testing allocation");
+    int* a = malloc(sizeof(int)*100);
+    
+    ASSERT(a != NULL);
+    
+    for (int i = 0; i < 100; i++) {
+        a[i] = i;
+    }
+    
+    for (int i = 0; i < 100; i++) {
+        ASSERT(a[i] == i);
+    }
+    
     free(a);
     LOG_DEBUG("it worked :O");
+    #endif
     
     shell_loop();
     LOG_WARNING("OS Functions Complete, Halting...\n");

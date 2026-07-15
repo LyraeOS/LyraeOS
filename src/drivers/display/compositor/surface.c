@@ -12,9 +12,7 @@ surface_t surface_new(int w, int h) {
         .h = h,
         .stride = w,
     };
-    LOG_DEBUG("attempting to allocate buffer");
     uint32_t* buf = (uint32_t* )malloc(w * h * sizeof(uint32_t));
-    LOG_DEBUG("please work :(");
     new.buf = buf;
     return new;
 }

@@ -20,7 +20,8 @@ bool init_gfx(struct limine_framebuffer_request rq)
     gfx_update_scale(1);
 
     init_tty(gfx_ctx);
-    gfx_ctx.back_buf = surface_new(gfx_ctx.width, gfx_ctx.height);
+    // backbuffer is disabled for now until scheduler for the compositor
+    //    gfx_ctx.back_buf = surface_new(gfx_ctx.width, gfx_ctx.height);
     return true;
 }
 
@@ -250,6 +251,24 @@ ScalingInfo gfx_get_scaling_info() {
 }
 struct limine_framebuffer* gfx_get_fb() {
   return gfx_ctx.framebuffer;
+}
+
+void gfx_fill_bb(uint32_t c) {
+  for (size_t x = 0; x < gfx_ctx.width; x++)
+    for (size_t y = 0; y < gfx_ctx.height; y++)
+      gfx_ctx.back_buf.buf[x + y*gfx_ctx.bytePitch] = c;
+}
+
+void gfx_swap() {
+    volatile uint32_t* dest = gfx_ctx.fb_ptr;
+    for (int y = 0; y < gfx_ctx.back_buf.h; y++) {
+        volatile uint32_t *dest_ptr = dest + y * gfx_ctx.back_buf.w;
+        uint32_t *src_ptr = gfx_ctx.back_buf.buf + y * gfx_ctx.back_buf.w;
+
+        for (int x = 0; x < gfx_ctx.back_buf.w; x++) {
+            dest_ptr[x] = src_ptr[x];
+        }
+    }
 }
 
 COMMAND(scale, "changes the screen scaling") {
